@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Methodology - HelmetDetect AI</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0051d5",
+            "primary-container": "#dbe1ff",
+            "on-primary-container": "#00174b",
+            secondary: "#4a53ba",
+            tertiary: "#8e3a8a",
+            background: "#fbf8ff",
+            surface: "#fbf8ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f4f2ff",
+            "surface-container": "#eeecff",
+            "surface-container-high": "#e7e6ff",
+            "surface-container-highest": "#e0e0ff",
+            "on-surface": "#14183c",
+            "on-surface-variant": "#424655",
+            "outline-variant": "#c3c6d8",
+            outline: "#737687",
+            error: "#ba1a1a",
+            "error-container": "#ffdad6",
+            success: "#1b7f4a",
+            "success-container": "#d8f5e5",
+            warning: "#9a6700",
+            "warning-container": "#fff3cd"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          spacing: {
+            gutter: "1.5rem",
+            md: "1rem",
+            sm: "0.5rem",
+            xs: "0.25rem",
+            lg: "1.5rem",
+            xl: "2.5rem"
+          },
+          fontFamily: {
+            button: ["Inter"],
+            "data-label": ["JetBrains Mono"],
+            "body-base": ["Inter"],
+            "headline-md": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-sm": ["Inter"]
+          },
+          fontSize: {
+            button: ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }],
+            "data-label": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "500" }],
+            "body-base": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "display-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-background text-on-surface font-body-base text-body-base min-h-screen flex antialiased">
+
+  <!-- Sidebar -->
+  <nav class="hidden md:flex bg-surface-container-low h-screen w-64 flex-col border-r border-outline-variant fixed left-0 top-0 p-md gap-sm z-40">
+
+    <div class="mb-xl px-sm">
+      <h2 class="font-headline-md text-headline-md font-bold text-primary">HelmetDetect AI</h2>
+      <p class="font-data-label text-data-label text-on-surface-variant mt-xs">Traffic Violation System</p>
+    </div>
+
+    <div class="flex-1 flex flex-col gap-xs">
+      <a class="text-on-surface-variant flex items-center px-md py-sm hover:bg-surface-container-high transition-all rounded-lg" href="#">
+        <span class="material-symbols-outlined mr-md">dashboard</span>
+        <span class="font-button text-button">Dashboard</span>
+      </a>
+
+      <a class="text-on-surface-variant flex items-center px-md py-sm hover:bg-surface-container-high transition-all rounded-lg" href="#">
+        <span class="material-symbols-outlined mr-md">analytics</span>
+        <span class="font-button text-button">Results</span>
+      </a>
+
+      <a class="bg-primary-container text-on-primary-container rounded-lg font-bold flex items-center px-md py-sm transition-all" href="#">
+        <span class="material-symbols-outlined mr-md" style="font-variation-settings: 'FILL' 1;">biotech</span>
+        <span class="font-button text-button">Methodology</span>
+      </a>
+
+      <a class="text-on-surface-variant flex items-center px-md py-sm hover:bg-surface-container-high transition-all rounded-lg" href="#">
+        <span class="material-symbols-outlined mr-md">inventory_2</span>
+        <span class="font-button text-button">Detection Archive</span>
+      </a>
+    </div>
+
+    <div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant">
+      <a class="text-on-surface-variant flex items-center px-md py-sm hover:bg-surface-container-high transition-all rounded-lg" href="#">
+        <span class="material-symbols-outlined mr-md">description</span>
+        <span class="font-button text-button">Project Report</span>
+      </a>
+
+      <a class="text-on-surface-variant flex items-center px-md py-sm hover:bg-surface-container-high transition-all rounded-lg" href="#">
+        <span class="material-symbols-outlined mr-md">help</span>
+        <span class="font-button text-button">About</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col min-w-0 md:ml-64">
+
+    <!-- Header -->
+    <header class="bg-surface sticky top-0 z-50 border-b border-outline-variant shadow-sm flex justify-between items-center px-gutter py-md w-full">
+      <div class="flex items-center gap-sm">
+        <button class="md:hidden text-on-surface hover:bg-surface-container-low transition-colors p-xs rounded-full">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+
+        <h1 class="font-headline-md text-headline-md font-bold text-primary">
+          Motorcycle Helmet Violation Detection
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-sm text-primary">
+        <button class="p-xs rounded-full hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+
+        <button class="p-xs rounded-full hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+
+        <button class="p-xs rounded-full hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">account_circle</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="flex-1 p-gutter max-w-[1440px] mx-auto w-full flex flex-col gap-xl">
+
+      <!-- Page Header -->
+      <section class="max-w-4xl">
+        <div class="inline-flex items-center gap-xs px-sm py-xs bg-primary-container text-on-primary-container rounded-full mb-md">
+          <span class="material-symbols-outlined text-[18px]">schema</span>
+          <span class="font-data-label text-data-label">Two-Stage ROI-Based Detection Pipeline</span>
+        </div>
+
+        <h1 class="font-display-lg text-display-lg text-on-surface mb-sm">
+          Architecture & Methodology
+        </h1>
+
+        <p class="font-body-base text-body-base text-on-surface-variant">
+          This page explains the methodology of the traffic helmet violation detection system.
+          The system uses a two-stage computer vision pipeline: first, motorcycles are detected in the input image or video frame;
+          then, a helmet detection model is applied only inside the motorcycle-related region of interest.
+          This design reduces false positives and makes the final violation decision more reliable.
+        </p>
+      </section>
+
+      <!-- Section 1: Pipeline -->
+      <section class="flex flex-col gap-md">
+        <h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-xs">
+          1. Processing Pipeline
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-md mt-sm">
+
+          <!-- Stage 1 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col relative group hover:border-primary transition-colors shadow-sm">
+            <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-md group-hover:bg-primary-container transition-colors">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">image</span>
+            </div>
+
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              1. Input Frame
+            </h3>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              The system receives either a single image or a video frame as input.
+              Each frame is processed independently before violation analysis.
+            </p>
+
+            <div class="hidden md:block absolute -right-6 top-1/2 -translate-y-1/2 z-10 text-outline">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col relative group hover:border-primary transition-colors shadow-sm">
+            <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-md group-hover:bg-primary-container transition-colors">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">two_wheeler</span>
+            </div>
+
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              2. Motorcycle Detection
+            </h3>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              A YOLO-based motorcycle detector identifies motorcycle bounding boxes.
+              These boxes are used as the main candidates for further helmet analysis.
+            </p>
+
+            <div class="hidden md:block absolute -right-6 top-1/2 -translate-y-1/2 z-10 text-outline">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col relative group hover:border-primary transition-colors shadow-sm">
+            <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-md group-hover:bg-primary-container transition-colors">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">crop</span>
+            </div>
+
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              3. ROI Extraction
+            </h3>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              The motorcycle bounding box is expanded with padding to create a region of interest.
+              Helmet detection is applied only inside this cropped area.
+            </p>
+
+            <div class="hidden md:block absolute -right-6 top-1/2 -translate-y-1/2 z-10 text-outline">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col group hover:border-tertiary transition-colors shadow-sm">
+            <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-tertiary mb-md group-hover:bg-error-container transition-colors">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gpp_maybe</span>
+            </div>
+
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              4. Violation Decision
+            </h3>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              If the helmet model detects a no_helmet class inside the motorcycle ROI,
+              the system marks the motorcycle as a helmet violation.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 2: Model Specs -->
+      <section class="flex flex-col gap-md">
+        <h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-xs">
+          2. Model Specifications
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter mt-sm">
+
+          <!-- Motorcycle Model -->
+          <div class="bg-surface-container-low rounded-xl p-lg border border-outline-variant shadow-sm flex flex-col gap-md">
+            <div class="flex items-start justify-between gap-md">
+              <div>
+                <div class="inline-flex items-center gap-xs px-sm py-xs bg-primary-container text-on-primary-container rounded-full mb-md">
+                  <span class="material-symbols-outlined text-[16px]">two_wheeler</span>
+                  <span class="font-data-label text-data-label">Stage 1 Model</span>
+                </div>
+
+                <h3 class="font-headline-md text-headline-md text-on-surface">
+                  Motorcycle Detector
+                </h3>
+              </div>
+
+              <span class="material-symbols-outlined text-primary text-[36px]">smart_toy</span>
+            </div>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              The first model detects motorcycles in the input frame.
+              Its main purpose is not to make the final violation decision directly, but to locate the relevant vehicle area.
+              This allows the second model to focus only on motorcycle-related regions.
+            </p>
+
+            <div class="grid grid-cols-2 gap-sm mt-sm">
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Task</span>
+                <p class="font-button text-button text-on-surface mt-xs">Object Detection</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Class</span>
+                <p class="font-button text-button text-on-surface mt-xs">Motorcycle</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Output</span>
+                <p class="font-button text-button text-on-surface mt-xs">Bounding Box</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Usage</span>
+                <p class="font-button text-button text-on-surface mt-xs">ROI Creation</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Helmet Model -->
+          <div class="bg-surface-container-low rounded-xl p-lg border border-outline-variant shadow-sm flex flex-col gap-md">
+            <div class="flex items-start justify-between gap-md">
+              <div>
+                <div class="inline-flex items-center gap-xs px-sm py-xs bg-primary-container text-on-primary-container rounded-full mb-md">
+                  <span class="material-symbols-outlined text-[16px]">sports_motorsports</span>
+                  <span class="font-data-label text-data-label">Stage 2 Model</span>
+                </div>
+
+                <h3 class="font-headline-md text-headline-md text-on-surface">
+                  Helmet / No Helmet Detector
+                </h3>
+              </div>
+
+              <span class="material-symbols-outlined text-tertiary text-[36px]">health_and_safety</span>
+            </div>
+
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              The second model is applied only inside the extracted motorcycle ROI.
+              It detects whether the rider region contains a helmet or no_helmet prediction.
+              This ROI-based usage reduces false detections from pedestrians, background objects, and unrelated helmets.
+            </p>
+
+            <div class="grid grid-cols-2 gap-sm mt-sm">
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Task</span>
+                <p class="font-button text-button text-on-surface mt-xs">Helmet Detection</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Classes</span>
+                <p class="font-button text-button text-on-surface mt-xs">helmet / no_helmet</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Input</span>
+                <p class="font-button text-button text-on-surface mt-xs">Motorcycle ROI</p>
+              </div>
+
+              <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+                <span class="font-data-label text-data-label text-on-surface-variant uppercase">Decision</span>
+                <p class="font-button text-button text-on-surface mt-xs">Violation / Safe</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Section 3: Decision Logic -->
+      <section class="flex flex-col gap-md">
+        <h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-xs">
+          3. Violation Decision Logic
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-sm">
+
+          <div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-md">
+              Rule-Based Interpretation
+            </h3>
+
+            <p class="font-body-base text-body-base text-on-surface-variant mb-md">
+              The final decision is generated using the outputs of both models.
+              A motorcycle is first detected in the image.
+              Then, the helmet model is executed only on the corresponding motorcycle ROI.
+              If at least one no_helmet detection is found inside the ROI with sufficient confidence,
+              the system labels that motorcycle as a helmet violation.
+            </p>
+
+            <div class="bg-surface-container-low rounded-lg border border-outline-variant p-md font-data-label text-data-label text-on-surface overflow-x-auto">
+<pre>
+Input frame
+  ↓
+Detect motorcycle bounding boxes
+  ↓
+For each motorcycle:
+    Create padded ROI crop
+    Run helmet/no_helmet detector on ROI
+    If no_helmet is detected:
+        violation = True
+    Else:
+        violation = False
+  ↓
+Draw result on original frame
+</pre>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-sm">
+
+            <div class="bg-success-container border border-outline-variant rounded-xl p-md shadow-sm">
+              <div class="flex items-center gap-sm mb-xs">
+                <span class="material-symbols-outlined text-success">check_circle</span>
+                <h4 class="font-button text-button text-on-surface">Safe Case</h4>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                If a helmet is detected inside the motorcycle ROI and no no_helmet class is found,
+                the case is considered non-violation.
+              </p>
+            </div>
+
+            <div class="bg-error-container border border-outline-variant rounded-xl p-md shadow-sm">
+              <div class="flex items-center gap-sm mb-xs">
+                <span class="material-symbols-outlined text-error">warning</span>
+                <h4 class="font-button text-button text-on-surface">Violation Case</h4>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                If the no_helmet class is detected inside the motorcycle ROI,
+                the system marks the rider as a helmet violation.
+              </p>
+            </div>
+
+            <div class="bg-warning-container border border-outline-variant rounded-xl p-md shadow-sm">
+              <div class="flex items-center gap-sm mb-xs">
+                <span class="material-symbols-outlined text-warning">priority_high</span>
+                <h4 class="font-button text-button text-on-surface">Uncertain Case</h4>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                If the motorcycle is detected but helmet predictions are weak or missing,
+                the system may keep the result as uncertain instead of forcing a decision.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Why ROI -->
+      <section class="flex flex-col gap-md pb-xl">
+        <h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-xs">
+          4. Why ROI-Based Detection?
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-md mt-sm">
+
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+            <span class="material-symbols-outlined text-primary text-[36px] mb-md">center_focus_strong</span>
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              Focused Detection Area
+            </h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              The helmet detector does not scan the entire image.
+              It only analyzes areas where motorcycles are detected.
+            </p>
+          </div>
+
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+            <span class="material-symbols-outlined text-primary text-[36px] mb-md">filter_alt</span>
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              Fewer False Positives
+            </h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Pedestrians, background heads, and unrelated helmets are less likely to be classified as motorcycle helmet cases.
+            </p>
+          </div>
+
+          <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm">
+            <span class="material-symbols-outlined text-primary text-[36px] mb-md">speed</span>
+            <h3 class="font-button text-button text-on-surface mb-xs">
+              Efficient Processing
+            </h3>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">
+              Running the helmet model on smaller cropped regions makes the pipeline more efficient and suitable for image or video processing.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+</body>
+</html>

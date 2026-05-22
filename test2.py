@@ -5,10 +5,10 @@ from pathlib import Path
 
 # Load Models
 MOTOR_MODEL = YOLO('yolov8s.pt') 
-HELMET_MODEL = YOLO(r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\detect_helmet_detect\runs\helmet_detection\v12\weights\best.pt")
+HELMET_MODEL = YOLO(r"c:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt")
 
-SOURCE_PATH = r"C:\Users\Lenovo\Desktop\traffic_base_project\datasets\test_images_v1"
-OUTPUT_DIR = r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\test2_v1"
+SOURCE_PATH = r"C:\Users\Lenovo\Desktop\traffic_base_project\datasets\CCTV_helmet_ware_no\test\images"
+OUTPUT_DIR = r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\t2"
 
 def process_image(image_path):
     img = cv2.imread(str(image_path))
