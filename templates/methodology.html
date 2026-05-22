@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Methodology - Traffic Helmet Violation Detection System</title>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dashboard: {
+              beige: "#f4f1e6",
+              card: "#ede9db",
+              dark: "#1a1a1a",
+              status: "#478160",
+              accentRed: "#922a1f",
+              accentBlue: "#163a8a"
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="h-screen overflow-hidden flex">
+
+  <!-- Sidebar -->
+  <aside class="w-[280px] h-screen border-r border-gray-300/50 px-6 py-6 flex flex-col gap-5 shrink-0">
+
+    <!-- Logo / Title -->
+    <div class="space-y-1">
+      <h1 class="text-2xl font-bold tracking-tight text-dashboard-accentBlue">
+        Traffic Safety Lab
+      </h1>
+
+      <p class="text-xs text-gray-500 font-medium">
+        Helmet Violation Detection Pipeline
+      </p>
+
+      <div class="mt-4 flex items-center gap-2 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1.5 rounded-full w-fit">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        SYSTEM STATUS: ACTIVE
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="space-y-1">
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/">
+        <i class="fa-solid fa-chart-line w-5"></i>
+        Dashboard
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/performance">
+        <i class="fa-solid fa-motorcycle w-5"></i>
+        Performance / Analytics
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 nav-active rounded-lg text-sm font-semibold shadow-sm" href="/methodology">
+        <i class="fa-solid fa-diagram-project w-5"></i>
+        Methodology
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/archive">
+        <i class="fa-solid fa-clock-rotate-left w-5"></i>
+        Archive
+      </a>
+    </nav>
+
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 h-screen px-8 py-5 overflow-y-auto overflow-x-hidden method-scroll">
+
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-5 gap-4">
+      <div>
+        <h2 class="text-3xl font-bold mb-1 gradient-title">
+          AI-Based Traffic Helmet Violation Detection
+        </h2>
+
+        <p class="text-gray-600 font-medium max-w-4xl">
+          This page explains the methodology of the YOLO-based motorcycle and helmet detection pipeline.
+          The system uses a two-stage ROI-based approach to improve reliability and reduce false positives in traffic scene analysis.
+        </p>
+      </div>
+
+      <div class="flex gap-3 shrink-0">
+        <div class="blue-soft border px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold shadow-sm">
+          <i class="fa-solid fa-diagram-project opacity-80"></i>
+          Two-Stage Pipeline
+        </div>
+
+        <div class="green-soft border px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold shadow-sm">
+          <i class="fa-solid fa-crop-simple opacity-80"></i>
+          ROI-Based Detection
+        </div>
+      </div>
+    </div>
+
+    <!-- Processing Pipeline -->
+    <section class="mb-5">
+      <h3 class="text-lg font-bold mb-3 text-gray-900">
+        Processing Pipeline
+      </h3>
+
+      <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] gap-3 items-center">
+
+        <!-- Step 1 -->
+        <div class="method-card rounded-xl p-4 min-h-[175px]">
+          <div class="h-11 w-11 rounded-xl blue-soft border flex items-center justify-center mb-3">
+            <i class="fa-solid fa-image text-lg"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900 mb-1">
+            1. Input Frame
+          </h4>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            The system receives a single image or a video frame extracted from traffic footage.
+          </p>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex items-center justify-center">
+          <div class="w-10 h-10 rounded-full bg-white/70 border border-blue-200 text-dashboard-accentBlue flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="method-card rounded-xl p-4 min-h-[175px]">
+          <div class="h-11 w-11 rounded-xl blue-soft border flex items-center justify-center mb-3">
+            <i class="fa-solid fa-motorcycle text-lg"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900 mb-1">
+            2. Motorcycle Detection
+          </h4>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            The first YOLO model detects motorcycle bounding boxes and localizes the candidate vehicle area.
+          </p>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex items-center justify-center">
+          <div class="w-10 h-10 rounded-full bg-white/70 border border-emerald-200 text-emerald-700 flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="method-card rounded-xl p-4 min-h-[175px]">
+          <div class="h-11 w-11 rounded-xl green-soft border flex items-center justify-center mb-3">
+            <i class="fa-solid fa-crop-simple text-lg"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900 mb-1">
+            3. ROI Extraction
+          </h4>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            The motorcycle box is expanded with padding and cropped as a focused region of interest.
+          </p>
+        </div>
+
+        <!-- Arrow -->
+        <div class="flex items-center justify-center">
+          <div class="w-10 h-10 rounded-full bg-white/70 border border-red-200 text-dashboard-accentRed flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="method-card rounded-xl p-4 min-h-[175px]">
+          <div class="h-11 w-11 rounded-xl red-soft border flex items-center justify-center mb-3">
+            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900 mb-1">
+            4. Decision
+          </h4>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            If <strong>no_helmet</strong> is detected inside the ROI, the system marks the case as a helmet violation.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Three Feature Cards - moved upward -->
+    <section class="grid grid-cols-3 gap-4 mb-5">
+
+      <div class="soft-panel rounded-xl p-4 min-h-[128px]">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-lg blue-soft border flex items-center justify-center">
+            <i class="fa-solid fa-crosshairs"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900">
+            Focused Detection
+          </h4>
+        </div>
+
+        <p class="text-xs text-gray-600 leading-relaxed">
+          Helmet detection is applied only on motorcycle-related regions, which keeps the second stage focused on the relevant area.
+        </p>
+      </div>
+
+      <div class="soft-panel rounded-xl p-4 min-h-[128px]">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-lg green-soft border flex items-center justify-center">
+            <i class="fa-solid fa-filter"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900">
+            Fewer False Positives
+          </h4>
+        </div>
+
+        <p class="text-xs text-gray-600 leading-relaxed">
+          ROI-based analysis reduces false detections caused by pedestrians, background heads, or unrelated helmet-like objects.
+        </p>
+      </div>
+
+      <div class="soft-panel rounded-xl p-4 min-h-[128px]">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-lg red-soft border flex items-center justify-center">
+            <i class="fa-solid fa-gauge-high"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900">
+            Efficient Pipeline
+          </h4>
+        </div>
+
+        <p class="text-xs text-gray-600 leading-relaxed">
+          By running the helmet detector only on cropped regions, the pipeline becomes more efficient and easier to scale.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- Main Methodology Grid -->
+    <section class="grid grid-cols-[1.25fr_0.95fr] gap-5 mb-5 items-stretch">
+
+      <!-- Model Structure -->
+      <div class="soft-panel rounded-xl p-5 min-h-[345px]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
+              Model Structure
+            </p>
+
+            <h3 class="text-xl font-bold text-gray-900">
+              Two-Model Detection System
+            </h3>
+
+            <p class="text-xs text-gray-600 mt-1">
+              The system separates vehicle localization and helmet analysis into two different stages.
+            </p>
+          </div>
+
+          <div class="w-11 h-11 rounded-full blue-soft border flex items-center justify-center">
+            <i class="fa-solid fa-microchip text-lg"></i>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+
+          <!-- Motorcycle Detector -->
+          <div class="blue-soft border rounded-xl p-4 min-h-[225px]">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-white border border-blue-200 flex items-center justify-center text-blue-800">
+                <i class="fa-solid fa-motorcycle"></i>
+              </div>
+
+              <div>
+                <p class="text-[9px] font-bold uppercase text-blue-700">
+                  Stage 1 Model
+                </p>
+                <h4 class="text-sm font-bold text-gray-900">
+                  Motorcycle Detector
+                </h4>
+              </div>
+            </div>
+
+            <p class="text-xs text-gray-600 leading-relaxed mb-3">
+              This model detects motorcycles in the input frame and provides the main bounding boxes used for subsequent ROI-based analysis.
+            </p>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-white/70 rounded-lg border border-blue-100 p-2">
+                <p class="text-[8px] font-bold text-gray-500 uppercase">Task</p>
+                <p class="text-xs font-bold text-blue-900">Detection</p>
+              </div>
+
+              <div class="bg-white/70 rounded-lg border border-blue-100 p-2">
+                <p class="text-[8px] font-bold text-gray-500 uppercase">Output</p>
+                <p class="text-xs font-bold text-blue-900">BBox</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Helmet Detector -->
+          <div class="green-soft border rounded-xl p-4 min-h-[225px]">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-white border border-emerald-200 flex items-center justify-center text-emerald-800">
+                <i class="fa-solid fa-helmet-safety"></i>
+              </div>
+
+              <div>
+                <p class="text-[9px] font-bold uppercase text-emerald-700">
+                  Stage 2 Model
+                </p>
+                <h4 class="text-sm font-bold text-gray-900">
+                  Helmet Detector
+                </h4>
+              </div>
+            </div>
+
+            <p class="text-xs text-gray-600 leading-relaxed mb-3">
+              This model runs only inside the motorcycle ROI and predicts whether the detected rider area contains helmet or no_helmet class.
+            </p>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-white/70 rounded-lg border border-emerald-100 p-2">
+                <p class="text-[8px] font-bold text-gray-500 uppercase">Classes</p>
+                <p class="text-xs font-bold text-emerald-900">helmet / no_helmet</p>
+              </div>
+
+              <div class="bg-white/70 rounded-lg border border-emerald-100 p-2">
+                <p class="text-[8px] font-bold text-gray-500 uppercase">Input</p>
+                <p class="text-xs font-bold text-emerald-900">ROI Crop</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Decision Logic -->
+      <div class="soft-panel rounded-xl p-5 min-h-[345px]">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">
+              Decision Logic
+            </p>
+
+            <h3 class="text-xl font-bold text-gray-900">
+              Violation Rule
+            </h3>
+
+            <p class="text-xs text-gray-600 mt-1">
+              The final decision is produced by combining ROI selection and helmet classification output.
+            </p>
+          </div>
+
+          <div class="w-11 h-11 rounded-full red-soft border flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved text-lg"></i>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="blue-soft border rounded-lg p-3">
+            <p class="text-xs font-bold text-blue-900">
+              1. Motorcycle Found
+            </p>
+            <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+              The system first identifies a motorcycle and creates a candidate area for detailed inspection.
+            </p>
+          </div>
+
+          <div class="green-soft border rounded-lg p-3">
+            <p class="text-xs font-bold text-emerald-900">
+              2. Helmet Model Runs
+            </p>
+            <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+              The second model analyzes only the cropped motorcycle region instead of the full image.
+            </p>
+          </div>
+
+          <div class="bg-red-50 border border-red-200 text-red-900 rounded-lg p-4 shadow-sm">
+            <p class="text-xs font-bold flex items-center gap-2">
+              3. no_helmet Detected
+            </p>
+            <p class="text-xs text-red-800 mt-2 leading-relaxed">
+              If a no_helmet prediction is detected inside the ROI with sufficient confidence, the case is classified as a helmet violation.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Long Methodology Detail Section -->
+    <section class="soft-panel rounded-xl p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-11 h-11 rounded-lg blue-soft border flex items-center justify-center">
+          <i class="fa-solid fa-circle-info"></i>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">
+            Why This Methodology?
+          </h3>
+
+          <p class="text-xs text-gray-500">
+            Design rationale behind the ROI-based two-stage detection pipeline
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <p class="text-sm text-gray-600 leading-7 mb-4">
+            A full-frame helmet detector may generate incorrect detections in crowded traffic scenes because it analyzes every visible object in the image.
+            In real road environments, pedestrians, background heads, helmet-like objects, or riders on nearby vehicles can easily confuse the detector.
+          </p>
+
+          <p class="text-sm text-gray-600 leading-7">
+            To reduce this problem, the system first detects the motorcycle and then limits the helmet detection process to the motorcycle-related region.
+            This means the second model does not search the entire image. Instead, it focuses only on the area where a rider is expected to appear.
+          </p>
+        </div>
+
+        <div>
+          <p class="text-sm text-gray-600 leading-7 mb-4">
+            This design makes the violation decision more reliable because the final result depends on both vehicle localization and helmet classification.
+            A no_helmet prediction outside the motorcycle ROI is ignored, which helps reduce false violation alerts.
+          </p>
+
+          <p class="text-sm text-gray-600 leading-7">
+            The methodology is also efficient. Since the helmet detector runs on smaller cropped regions, the pipeline can process images faster and can later be extended to video-based analysis.
+            Overall, this ROI-based structure improves accuracy, interpretability, and practical usability.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+/* ================================
+   Main Theme
+================================ */
+
 :root {
   --bg-warm-beige: #f4f1e6;
   --card-bg: #ede9db;
@@ -15,6 +19,9 @@
 html,
 body {
   height: 100%;
+}
+
+body {
   overflow: hidden;
 }
 
@@ -27,15 +34,6 @@ body {
   color: #1a1a1a;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 button {
   cursor: pointer;
 }
@@ -45,8 +43,89 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* ================================
+   Scrollbar
+================================ */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.method-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.method-scroll::-webkit-scrollbar-thumb {
+  background: rgba(22, 58, 138, 0.22);
+  border-radius: 999px;
+}
+
+.method-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ================================
+   Shared UI
+================================ */
+
 .gradient-title {
   background: linear-gradient(90deg, #163a8a, #2563eb, #922a1f);
+  background-clip: text;
   -webkit-background-clip: text;
+  color: transparent;
   -webkit-text-fill-color: transparent;
+}
+
+/* Aktif sidebar menüsü */
+.nav-active {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+/* ================================
+   Methodology Page
+   Ana dashboard renklerine göre
+================================ */
+
+.method-card {
+  background: rgba(255, 255, 255, 0.60);
+  border: 1px solid rgba(209, 213, 219, 0.60);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+}
+
+.soft-panel {
+  background: rgba(255, 255, 255, 0.60);
+  border: 1px solid rgba(209, 213, 219, 0.60);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+}
+
+/* Ana dashboard mavi tonu */
+.blue-soft {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e3a8a;
+}
+
+/* Ana dashboard yeşil tonu */
+.green-soft {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+/* Ana dashboard kırmızı tonu */
+.red-soft {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+/* Ana kırmızı vurgu */
+.danger-gradient {
+  background: linear-gradient(90deg, #163a8a 0%, #1d4ed8 48%, #922a1f 100%);
 }

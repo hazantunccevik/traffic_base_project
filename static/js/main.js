@@ -1,341 +1,618 @@
-let selectedMediaFile = null;
+document.addEventListener("DOMContentLoaded", () => {
+  /*
+    =====================================================
+    Dashboard Page Guard
+    =====================================================
+  */
+  const uploadImageBtn = document.getElementById("uploadImageBtn");
+  if (!uploadImageBtn) return;
 
-const uploadImageBtn = document.getElementById("uploadImageBtn");
-const uploadVideoBtn = document.getElementById("uploadVideoBtn");
-const newUploadCard = document.getElementById("newUploadCard");
+  /*
+    =====================================================
+    Global State
+    =====================================================
+  */
 
-const uploadModal = document.getElementById("uploadModal");
-const closeModalBtn = document.getElementById("closeModalBtn");
-const cancelUploadBtn = document.getElementById("cancelUploadBtn");
-const chooseFileBtn = document.getElementById("chooseFileBtn");
-const confirmUploadBtn = document.getElementById("confirmUploadBtn");
-const mediaInput = document.getElementById("mediaInput");
-const selectedFileName = document.getElementById("selectedFileName");
+  let selectedMediaFile = null;
 
-const originalInputImage = document.getElementById("originalInputImage");
-const originalInputVideo = document.getElementById("originalInputVideo");
-const detectionOutputImage = document.getElementById("detectionOutputImage");
-const detectionOutputVideo = document.getElementById("detectionOutputVideo");
+  // Prevent adding the same file multiple times to Recent Uploads
+  const recentUploadKeys = new Set();
 
-const originalPlaceholder = document.getElementById("originalPlaceholder");
-const outputPlaceholder = document.getElementById("outputPlaceholder");
+  /*
+    =====================================================
+    Element Selectors
+    =====================================================
+  */
 
-const inputStatus = document.getElementById("inputStatus");
-const outputStatus = document.getElementById("outputStatus");
+  const uploadVideoBtn = document.getElementById("uploadVideoBtn");
+  const newUploadCard = document.getElementById("newUploadCard");
 
-const runDetectionBtn = document.getElementById("runDetectionBtn");
+  const uploadModal = document.getElementById("uploadModal");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const cancelUploadBtn = document.getElementById("cancelUploadBtn");
+  const chooseFileBtn = document.getElementById("chooseFileBtn");
+  const confirmUploadBtn = document.getElementById("confirmUploadBtn");
+  const mediaInput = document.getElementById("mediaInput");
+  const selectedFileName = document.getElementById("selectedFileName");
 
-const motorcycleCount = document.getElementById("motorcycleCount");
-const helmetCount = document.getElementById("helmetCount");
-const violationCount = document.getElementById("violationCount");
-const avgConfidence = document.getElementById("avgConfidence");
-const processingTime = document.getElementById("processingTime");
-const resolutionText = document.getElementById("resolutionText");
+  const originalInputImage = document.getElementById("originalInputImage");
+  const originalInputVideo = document.getElementById("originalInputVideo");
+  const detectionOutputImage = document.getElementById("detectionOutputImage");
+  const detectionOutputVideo = document.getElementById("detectionOutputVideo");
 
-const statusModal = document.getElementById("statusModal");
-const statusIcon = document.getElementById("statusIcon");
-const statusTitle = document.getElementById("statusTitle");
-const statusMessage = document.getElementById("statusMessage");
-const closeStatusModalBtn = document.getElementById("closeStatusModalBtn");
+  const originalPlaceholder = document.getElementById("originalPlaceholder");
+  const outputPlaceholder = document.getElementById("outputPlaceholder");
 
-function openUploadModal() {
-  uploadModal.classList.remove("hidden");
-  uploadModal.classList.add("flex");
-}
+  const inputStatus = document.getElementById("inputStatus");
+  const outputStatus = document.getElementById("outputStatus");
 
-function closeUploadModal() {
-  uploadModal.classList.add("hidden");
-  uploadModal.classList.remove("flex");
-}
+  const runDetectionBtn = document.getElementById("runDetectionBtn");
 
-function showStatusModal(type, title, message) {
-  statusTitle.innerText = title;
-  statusMessage.innerText = message;
+  const motorcycleCount = document.getElementById("motorcycleCount");
+  const helmetCount = document.getElementById("helmetCount");
+  const violationCount = document.getElementById("violationCount");
+  const avgConfidence = document.getElementById("avgConfidence");
+  const processingTime = document.getElementById("processingTime");
+  const resolutionText = document.getElementById("resolutionText");
 
-  if (type === "success") {
-    statusIcon.className =
-      "w-16 h-16 mx-auto mb-5 rounded-full bg-emerald-600 text-white flex items-center justify-center";
-    statusIcon.innerHTML = '<i class="fa-solid fa-check text-2xl"></i>';
-  } else if (type === "error") {
-    statusIcon.className =
-      "w-16 h-16 mx-auto mb-5 rounded-full bg-dashboard-accentRed text-white flex items-center justify-center";
-    statusIcon.innerHTML =
-      '<i class="fa-solid fa-triangle-exclamation text-2xl"></i>';
-  } else {
-    statusIcon.className =
-      "w-16 h-16 mx-auto mb-5 rounded-full bg-dashboard-accentBlue text-white flex items-center justify-center";
-    statusIcon.innerHTML = '<i class="fa-solid fa-circle-info text-2xl"></i>';
+  const statusModal = document.getElementById("statusModal");
+  const statusIcon = document.getElementById("statusIcon");
+  const statusTitle = document.getElementById("statusTitle");
+  const statusMessage = document.getElementById("statusMessage");
+  const closeStatusModalBtn = document.getElementById("closeStatusModalBtn");
+ 
+  /*
+    =====================================================
+    Formatting Helpers (The Precision Update)
+    =====================================================
+  */
+  function formatProcessingTime(ms) {
+    if (!ms || ms === 0) return "0 ms";
+    if (ms >= 1000) {
+      return (ms / 1000).toFixed(2) + " s";
+    }
+    return ms + " ms";
   }
 
-  statusModal.classList.remove("hidden");
-  statusModal.classList.add("flex");
-}
-
-function closeStatusModal() {
-  statusModal.classList.add("hidden");
-  statusModal.classList.remove("flex");
-}
-
-function resetDetectionValues() {
-  motorcycleCount.innerText = "0";
-  helmetCount.innerText = "0";
-  violationCount.innerText = "0";
-  avgConfidence.innerText = "0%";
-  processingTime.innerText = "0 ms";
-  resolutionText.innerText = "-";
-
-  outputStatus.className =
-    "bg-gray-200 text-gray-700 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
-
-  outputStatus.innerHTML =
-    '<span class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span> Waiting for Detection';
-}
-
-function setInputPreview(file) {
-  const fileUrl = URL.createObjectURL(file);
-
-  originalPlaceholder.classList.add("hidden");
-  outputPlaceholder.classList.add("hidden");
-
-  originalInputImage.classList.add("hidden");
-  originalInputVideo.classList.add("hidden");
-  detectionOutputImage.classList.add("hidden");
-  detectionOutputVideo.classList.add("hidden");
-
-  if (file.type.startsWith("image/")) {
-    originalInputImage.src = fileUrl;
-    detectionOutputImage.src = fileUrl;
-
-    originalInputImage.classList.remove("hidden");
-    detectionOutputImage.classList.remove("hidden");
-  } else if (file.type.startsWith("video/")) {
-    originalInputVideo.src = fileUrl;
-    detectionOutputVideo.src = fileUrl;
-
-    originalInputVideo.classList.remove("hidden");
-    detectionOutputVideo.classList.remove("hidden");
+  function formatConfidence(val) {
+    if (val === undefined || val === null || val === "-") return "0%";
+    // If the backend sends 0.85 instead of 85, convert it
+    let numeric = parseFloat(val);
+    if (numeric < 1 && numeric > 0) numeric = numeric * 100;
+    return Math.round(numeric) + "%";
   }
 
-  inputStatus.className =
-    "bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-md";
+  
+  /*
+    =====================================================
+    Modal & UI Functions
+    =====================================================
+  */
 
-  inputStatus.innerText = "Ready";
+  function openUploadModal() {
+    if (!uploadModal) return;
 
-  resetDetectionValues();
-}
+    uploadModal.classList.remove("hidden");
+    uploadModal.classList.add("flex");
+  }
 
-function addRecentUpload(file) {
-  const recentUploads = document.getElementById("recentUploads");
+  function closeUploadModal() {
+    if (!uploadModal) return;
 
-  const card = document.createElement("div");
+    uploadModal.classList.add("hidden");
+    uploadModal.classList.remove("flex");
+  }
 
-  card.className =
-    "flex-none w-[170px] bg-white rounded-xl p-1.5 shadow-sm border border-gray-200/50";
+  function showStatusModal(type, title, message) {
+    if (!statusModal || !statusIcon || !statusTitle || !statusMessage) {
+      alert(message);
+      return;
+    }
 
-  const icon = file.type.startsWith("video/") ? "fa-video" : "fa-image";
+    statusTitle.innerText = title;
+    statusMessage.innerText = message;
 
-  card.innerHTML = `
-    <div class="h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center text-gray-400">
-      <i class="fa-solid ${icon} text-3xl"></i>
-    </div>
+    if (type === "success") {
+      statusIcon.className =
+        "w-16 h-16 mx-auto mb-5 rounded-full bg-emerald-600 text-white flex items-center justify-center";
 
-    <div class="p-2 flex items-center justify-between">
-      <span class="text-[10px] font-mono font-medium text-gray-600 truncate max-w-[120px]">
-        ${file.name}
-      </span>
-      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-    </div>
-  `;
+      statusIcon.innerHTML =
+        '<i class="fa-solid fa-check text-2xl"></i>';
+    } else if (type === "error") {
+      statusIcon.className =
+        "w-16 h-16 mx-auto mb-5 rounded-full bg-dashboard-accentRed text-white flex items-center justify-center";
 
-  recentUploads.insertBefore(card, newUploadCard);
-}
+      statusIcon.innerHTML =
+        '<i class="fa-solid fa-triangle-exclamation text-2xl"></i>';
+    } else {
+      statusIcon.className =
+        "w-16 h-16 mx-auto mb-5 rounded-full bg-dashboard-accentBlue text-white flex items-center justify-center";
 
-function simulateDetectionForNow() {
-  const startTime = performance.now();
+      statusIcon.innerHTML =
+        '<i class="fa-solid fa-circle-info text-2xl"></i>';
+    }
 
-  runDetectionBtn.disabled = true;
-  runDetectionBtn.innerHTML =
-    '<i class="fa-solid fa-spinner fa-spin"></i> Processing Pipeline...';
+    statusModal.classList.remove("hidden");
+    statusModal.classList.add("flex");
+  }
 
-  outputStatus.className =
-    "bg-yellow-100 text-yellow-800 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+  function closeStatusModal() {
+    if (!statusModal) return;
 
-  outputStatus.innerHTML =
-    '<span class="w-1.5 h-1.5 bg-yellow-600 rounded-full animate-pulse"></span> Processing';
+    statusModal.classList.add("hidden");
+    statusModal.classList.remove("flex");
+  }
 
-  setTimeout(() => {
-    const endTime = performance.now();
-    const elapsed = Math.round(endTime - startTime);
+  /*
+    =====================================================
+    Reset / Status Helpers
+    =====================================================
+  */
 
-    motorcycleCount.innerText = "1";
-    helmetCount.innerText = "0";
-    violationCount.innerText = "1";
-    avgConfidence.innerText = "82%";
-    processingTime.innerText = elapsed + " ms";
+  function resetDetectionValues() {
+    if (motorcycleCount) motorcycleCount.innerText = "0";
+    if (helmetCount) helmetCount.innerText = "0";
+    if (violationCount) violationCount.innerText = "0";
+    if (avgConfidence) avgConfidence.innerText = "0%";
+    if (processingTime) processingTime.innerText = "0 ms";
+    if (resolutionText) resolutionText.innerText = "-";
 
-    if (selectedMediaFile && selectedMediaFile.type.startsWith("image/")) {
+    if (outputStatus) {
+      outputStatus.className =
+        "bg-gray-200 text-gray-700 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+
+      outputStatus.innerHTML =
+        '<span class="w-1.5 h-1.5 bg-gray-500 rounded-full"></span> Waiting for Detection';
+    }
+  }
+
+  function setProcessingState() {
+    if (runDetectionBtn) {
+      runDetectionBtn.disabled = true;
+      runDetectionBtn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Running YOLO Pipeline...';
+    }
+
+    if (outputStatus) {
+      outputStatus.className =
+        "bg-yellow-100 text-yellow-800 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+      outputStatus.innerHTML =
+        '<span class="w-1.5 h-1.5 bg-yellow-600 rounded-full animate-pulse"></span> Processing';
+    }
+  }
+
+  function resetRunButton() {
+    if (!runDetectionBtn) return;
+    runDetectionBtn.disabled = false;
+    runDetectionBtn.innerHTML =
+      '<i class="fa-solid fa-play"></i> Run Violation Detection';
+  }
+
+  function setOutputStatusSafe() {
+    if (!outputStatus) return;
+    outputStatus.className =
+      "bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+    outputStatus.innerHTML =
+      '<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Safe';
+  }
+
+  function setOutputStatusViolation() {
+    if (!outputStatus) return;
+    outputStatus.className =
+      "bg-dashboard-accentRed text-white text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+    outputStatus.innerHTML =
+      '<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Violation Detected';
+  }
+
+  function setOutputStatusError() {
+    if (!outputStatus) return;
+    outputStatus.className =
+      "bg-red-100 text-red-800 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+    outputStatus.innerHTML =
+      '<span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span> Error';
+  }
+
+  /*
+    =====================================================
+    File Preview Functions
+    =====================================================
+  */
+
+  function setInputPreview(file) {
+    if (!file) return;
+    const fileUrl = URL.createObjectURL(file);
+
+    if (originalPlaceholder) {
+      originalPlaceholder.classList.add("hidden");
+    }
+
+    if (outputPlaceholder) {
+      outputPlaceholder.classList.remove("hidden");
+    }
+
+    if (originalInputImage) {
+      originalInputImage.classList.add("hidden");
+      originalInputImage.removeAttribute("src");
+    }
+
+    if (originalInputVideo) {
+      originalInputVideo.classList.add("hidden");
+      originalInputVideo.removeAttribute("src");
+    }
+
+    if (detectionOutputImage) {
+      detectionOutputImage.classList.add("hidden");
+      detectionOutputImage.removeAttribute("src");
+    }
+
+    if (detectionOutputVideo) {
+      detectionOutputVideo.classList.add("hidden");
+      detectionOutputVideo.removeAttribute("src");
+    }
+
+    if (file.type.startsWith("image/")) {
+      if (originalInputImage) {
+        originalInputImage.src = fileUrl;
+        originalInputImage.classList.remove("hidden");
+      }
+    } else if (file.type.startsWith("video/")) {
+      if (originalInputVideo) {
+        originalInputVideo.src = fileUrl;
+        originalInputVideo.classList.remove("hidden");
+      }
+    }
+
+    if (inputStatus) {
+      inputStatus.className =
+        "bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-md";
+
+      inputStatus.innerText = "Ready";
+    }
+
+    resetDetectionValues();
+  }
+
+  function updateResolution(file) {
+    if (!resolutionText || !file) return;
+
+    if (file.type.startsWith("image/")) {
       const tempImg = new Image();
+      const objectUrl = URL.createObjectURL(file);
 
       tempImg.onload = function () {
         resolutionText.innerText = tempImg.width + "x" + tempImg.height;
+        URL.revokeObjectURL(objectUrl);
       };
 
-      tempImg.src = URL.createObjectURL(selectedMediaFile);
+      tempImg.src = objectUrl;
     } else {
       resolutionText.innerText = "video";
     }
-
-    outputStatus.className =
-      "bg-dashboard-accentRed text-white text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
-
-    outputStatus.innerHTML =
-      '<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Violation Detected';
-
-    runDetectionBtn.disabled = false;
-
-    runDetectionBtn.innerHTML =
-      '<i class="fa-solid fa-play"></i> Run Violation Detection';
-
-    showStatusModal(
-      "success",
-      "Detection Completed",
-      "The UI flow is working. In the next step, this button will be connected to the Flask YOLO backend and real detection results will be displayed."
-    );
-  }, 1200);
-}
-
-uploadImageBtn.addEventListener("click", openUploadModal);
-uploadVideoBtn.addEventListener("click", openUploadModal);
-newUploadCard.addEventListener("click", openUploadModal);
-
-closeModalBtn.addEventListener("click", closeUploadModal);
-cancelUploadBtn.addEventListener("click", closeUploadModal);
-closeStatusModalBtn.addEventListener("click", closeStatusModal);
-
-chooseFileBtn.addEventListener("click", () => {
-  mediaInput.click();
-});
-
-mediaInput.addEventListener("change", () => {
-  selectedMediaFile = mediaInput.files[0];
-
-  if (!selectedMediaFile) {
-    selectedFileName.innerText = "No file selected";
-    return;
   }
 
-  selectedFileName.innerText = selectedMediaFile.name;
-});
+  /*
+    =====================================================
+    Recent Uploads
+    =====================================================
+  */
 
-confirmUploadBtn.addEventListener("click", () => {
-  if (!selectedMediaFile) {
-    showStatusModal(
-      "error",
-      "No File Selected",
-      "Please choose an image or video first."
-    );
-    return;
+  function getFileKey(file) {
+    return `${file.name}-${file.size}-${file.lastModified}`;
   }
 
-  setInputPreview(selectedMediaFile);
-  addRecentUpload(selectedMediaFile);
-  closeUploadModal();
-});
+  function addRecentUpload(file) {
+    const recentUploads = document.getElementById("recentUploads");
 
-runDetectionBtn.addEventListener("click", async () => {
-  if (!selectedMediaFile) {
-    showStatusModal(
-      "error",
-      "No Input File",
-      "Please upload an image before running the detection pipeline."
-    );
-    return;
-  }
+    if (!recentUploads || !newUploadCard || !file) {
+      return;
+    }
 
-  if (!selectedMediaFile.type.startsWith("image/")) {
-    showStatusModal(
-      "error",
-      "Video Not Supported Yet",
-      "For now, the backend supports image detection only. Video detection will be added later."
-    );
-    return;
-  }
+    const fileKey = getFileKey(file);
 
-  const formData = new FormData();
-  formData.append("file", selectedMediaFile);
+    if (recentUploadKeys.has(fileKey)) {
+      showStatusModal(
+        "info",
+        "Already Uploaded",
+        "This file is already listed in Recent Uploads."
+      );
+      return;
+    }
 
-  runDetectionBtn.disabled = true;
-  runDetectionBtn.innerHTML =
-    '<i class="fa-solid fa-spinner fa-spin"></i> Running YOLO Pipeline...';
+    recentUploadKeys.add(fileKey);
 
-  outputStatus.className =
-    "bg-yellow-100 text-yellow-800 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
+    const fileUrl = URL.createObjectURL(file);
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
 
-  outputStatus.innerHTML =
-    '<span class="w-1.5 h-1.5 bg-yellow-600 rounded-full animate-pulse"></span> Processing';
+    const card = document.createElement("div");
 
-  try {
-    const response = await fetch("/api/detect", {
-      method: "POST",
-      body: formData
+    card.className =
+      "flex-none w-[150px] bg-white rounded-xl p-1.5 shadow-sm border border-gray-200/60 cursor-pointer hover:scale-[1.02] hover:shadow-md transition-all";
+
+    let previewHtml = "";
+
+    if (isImage) {
+      previewHtml = `
+        <div class="h-20 rounded-lg overflow-hidden bg-blue-50 flex items-center justify-center">
+          <img src="${fileUrl}" alt="${file.name}" class="w-full h-full object-cover">
+        </div>
+      `;
+    } else if (isVideo) {
+      previewHtml = `
+        <div class="h-20 rounded-lg overflow-hidden bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <i class="fa-solid fa-video text-3xl"></i>
+        </div>
+      `;
+    } else {
+      previewHtml = `
+        <div class="h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center text-gray-400">
+          <i class="fa-solid fa-file text-3xl"></i>
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      ${previewHtml}
+
+      <div class="p-2 flex items-center justify-between gap-2">
+        <span class="text-[10px] font-mono font-medium text-gray-600 truncate max-w-[105px]">
+          ${file.name}
+        </span>
+
+        <span class="w-2 h-2 rounded-full ${
+          isImage ? "bg-blue-400" : "bg-emerald-400"
+        }"></span>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      selectedMediaFile = file;
+
+      setInputPreview(file);
+
+      if (selectedFileName) {
+        selectedFileName.innerText = file.name;
+      }
+
+      showStatusModal(
+        "success",
+        "Upload Selected",
+        "The selected recent upload is ready for detection."
+      );
     });
 
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.error || "Detection failed.");
-    }
-
-    const summary = data.summary;
-
-    motorcycleCount.innerText = summary.motorcycles;
-    helmetCount.innerText = summary.helmets;
-    violationCount.innerText = summary.violations;
-    avgConfidence.innerText = summary.avg_confidence + "%";
-    processingTime.innerText = summary.processing_time + " ms";
-    resolutionText.innerText = summary.resolution;
-
-    detectionOutputVideo.classList.add("hidden");
-    detectionOutputImage.src = data.output_url + "?t=" + new Date().getTime();
-    detectionOutputImage.classList.remove("hidden");
-    outputPlaceholder.classList.add("hidden");
-
-    if (summary.violations > 0) {
-      outputStatus.className =
-        "bg-dashboard-accentRed text-white text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
-
-      outputStatus.innerHTML =
-        '<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Violation Detected';
-    } else {
-      outputStatus.className =
-        "bg-emerald-600 text-white text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
-
-      outputStatus.innerHTML =
-        '<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> Safe';
-    }
-
-    showStatusModal(
-      "success",
-      "Detection Completed",
-      "The uploaded image was processed successfully by the YOLO helmet violation pipeline."
-    );
-
-  } catch (error) {
-    outputStatus.className =
-      "bg-red-100 text-red-800 text-[10px] font-bold px-3 py-1 rounded-md flex items-center gap-1.5";
-
-    outputStatus.innerHTML =
-      '<span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span> Error';
-
-    showStatusModal(
-      "error",
-      "Detection Error",
-      error.message
-    );
-
-  } finally {
-    runDetectionBtn.disabled = false;
-    runDetectionBtn.innerHTML =
-      '<i class="fa-solid fa-play"></i> Run Violation Detection';
+    recentUploads.insertBefore(card, newUploadCard);
   }
+
+  function simulateDetectionForNow() {
+    const startTime = performance.now();
+
+    setProcessingState();
+
+    setTimeout(() => {
+      const endTime = performance.now();
+      const elapsed = Math.round(endTime - startTime);
+
+      if (motorcycleCount) motorcycleCount.innerText = "1";
+      if (helmetCount) helmetCount.innerText = "0";
+      if (violationCount) violationCount.innerText = "1";
+      if (avgConfidence) avgConfidence.innerText = "82%";
+      if (processingTime) processingTime.innerText = elapsed + " ms";
+
+      updateResolution(selectedMediaFile);
+
+      setOutputStatusViolation();
+      resetRunButton();
+
+      showStatusModal(
+        "success",
+        "Detection Completed",
+        "The UI flow is working. This is a frontend-only simulation."
+      );
+    }, 1200);
+  }
+
+  /*
+    =====================================================
+    Event Listeners - Upload Modal
+    =====================================================
+  */
+
+  uploadImageBtn.addEventListener("click", openUploadModal);
+
+  if (uploadVideoBtn) uploadVideoBtn.addEventListener("click", openUploadModal);
+  if (newUploadCard) newUploadCard.addEventListener("click", openUploadModal);
+  if (closeModalBtn) closeModalBtn.addEventListener("click", closeUploadModal);
+  if (cancelUploadBtn) cancelUploadBtn.addEventListener("click", closeUploadModal);
+  if (closeStatusModalBtn) closeStatusModalBtn.addEventListener("click", closeStatusModal);
+  if (chooseFileBtn && mediaInput) {
+    chooseFileBtn.addEventListener("click", () => {
+      mediaInput.click();
+    });
+  }
+
+  /*
+    =====================================================
+    Event Listeners - File Selection
+    =====================================================
+  */
+
+  if (mediaInput && selectedFileName) {
+    mediaInput.addEventListener("change", () => {
+      selectedMediaFile = mediaInput.files[0];
+
+      if (!selectedMediaFile) {
+        selectedFileName.innerText = "No file selected";
+        return;
+      }
+
+      selectedFileName.innerText = selectedMediaFile.name;
+    });
+  }
+
+  if (confirmUploadBtn) {
+    confirmUploadBtn.addEventListener("click", () => {
+      if (!selectedMediaFile) return;
+      const fileUrl = URL.createObjectURL(selectedMediaFile);
+      if (originalPlaceholder) originalPlaceholder.classList.add("hidden");
+
+      // Setup Preview
+      if (selectedMediaFile.type.startsWith("image/")) {
+        originalInputImage.src = fileUrl;
+        originalInputImage.classList.remove("hidden");
+        originalInputVideo.classList.add("hidden");
+      } else {
+        originalInputVideo.src = fileUrl;
+        originalInputVideo.classList.remove("hidden");
+        originalInputImage.classList.add("hidden");
+      }
+      closeUploadModal();
+    });
+  }
+
+  /*
+  =====================================================
+  Event Listener - Run Detection
+  =====================================================
+*/
+
+if (runDetectionBtn) {
+  runDetectionBtn.addEventListener("click", async () => {
+    if (!selectedMediaFile) {
+      showStatusModal(
+        "error",
+        "No Input File",
+        "Please upload an image or video before running the detection pipeline."
+      );
+      return;
+    }
+
+    const isImage = selectedMediaFile.type.startsWith("image/");
+    const isVideo = selectedMediaFile.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      showStatusModal(
+        "error",
+        "Unsupported File Type",
+        "Please upload a valid image or video file."
+      );
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedMediaFile);
+
+    setProcessingState();
+
+    try {
+      const endpoint = isVideo ? "/api/detect-video" : "/api/detect";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Server error.");
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Detection failed.");
+      }
+
+      if (isImage) {
+        const summary = data.summary || {};
+
+        if (motorcycleCount) motorcycleCount.innerText = summary.motorcycles ?? 0;
+        if (helmetCount) helmetCount.innerText = summary.helmets ?? 0;
+        if (violationCount) violationCount.innerText = summary.violations ?? 0;
+        if (avgConfidence) avgConfidence.innerText = (summary.avg_confidence ?? 0) + "%";
+        if (processingTime) processingTime.innerText = (summary.processing_time ?? 0) + " ms";
+        if (resolutionText) resolutionText.innerText = summary.resolution ?? "-";
+
+        if (detectionOutputVideo) {
+          detectionOutputVideo.classList.add("hidden");
+          detectionOutputVideo.removeAttribute("src");
+        }
+
+        if (detectionOutputImage) {
+          detectionOutputImage.src = data.output_url + "?t=" + new Date().getTime();
+          detectionOutputImage.classList.remove("hidden");
+        }
+
+        if (outputPlaceholder) {
+          outputPlaceholder.classList.add("hidden");
+        }
+
+        if ((summary.violations ?? 0) > 0) {
+          setOutputStatusViolation();
+        } else {
+          setOutputStatusSafe();
+        }
+
+        showStatusModal(
+          "success",
+          "Detection Completed",
+          "The uploaded image was processed successfully by the YOLO helmet violation pipeline."
+        );
+      }
+
+      if (isVideo) {
+         const summary = data.summary || {};
+         
+        if (detectionOutputImage) {
+          detectionOutputImage.classList.add("hidden");
+          detectionOutputImage.removeAttribute("src");
+        }
+
+        if (detectionOutputVideo) {
+          detectionOutputVideo.pause();
+
+          detectionOutputVideo.innerHTML = `
+            <source src="${data.output_url}?t=${new Date().getTime()}" type="video/mp4">
+          `;
+
+          detectionOutputVideo.classList.remove("hidden");
+          detectionOutputVideo.load();
+        }
+
+        if (outputPlaceholder) {
+          outputPlaceholder.classList.add("hidden");
+        }
+
+        if (motorcycleCount) motorcycleCount.innerText =  summary.motorcycles ?? 0;
+        if (helmetCount) helmetCount.innerText = summary.helmets ?? 0;
+        if (violationCount) violationCount.innerText = summary.violations ?? 0;
+        if (avgConfidence) avgConfidence.innerText = formatConfidence(summary.avg_confidence ?? "-");
+        if (processingTime) processingTime.innerText = formatProcessingTime(summary.processing_time ?? "-");
+        if (resolutionText) resolutionText.innerText = summary.resolution ?? "video";
+
+        if ((summary.violations ?? 0) > 0) {
+          setOutputStatusViolation();
+        } else {
+          setOutputStatusSafe();
+        }
+
+        showStatusModal(
+          "success",
+          "Video Detection Completed",
+          "The uploaded video was processed successfully by the YOLO video pipeline."
+        );
+      }
+    } catch (error) {
+      setOutputStatusError();
+
+      showStatusModal(
+        "error",
+        "Detection Error",
+        error.message
+      );
+    } finally {
+      resetRunButton();
+    }
+  });
+}
+
 });

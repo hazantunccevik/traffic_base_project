@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Archive - Traffic Helmet Violation Detection</title>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dashboard: {
+              beige: "#f4f1e6",
+              card: "#ede9db",
+              dark: "#1a1a1a",
+              status: "#478160",
+              accentRed: "#922a1f",
+              accentBlue: "#163a8a"
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="min-h-screen overflow-hidden flex">
+
+  <!-- Sidebar -->
+  <aside class="w-[280px] h-screen border-r border-gray-300/50 px-6 py-6 flex flex-col gap-5 shrink-0">
+
+    <!-- Logo -->
+    <div class="space-y-1">
+      <h1 class="text-2xl font-bold tracking-tight text-dashboard-accentBlue">
+        Traffic Safety Lab
+      </h1>
+
+      <p class="text-xs text-gray-500 font-medium">
+        Helmet Violation Detection Pipeline
+      </p>
+
+      <div class="mt-4 flex items-center gap-2 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1.5 rounded-full w-fit">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        SYSTEM STATUS: ACTIVE
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="space-y-1">
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/">
+        <i class="fa-solid fa-chart-line w-5"></i>
+        Dashboard
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/performance">
+        <i class="fa-solid fa-motorcycle w-5"></i>
+        Performance / Analytics
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/methodology">
+        <i class="fa-solid fa-diagram-project w-5"></i>
+        Methodology
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 bg-blue-100 text-blue-900 rounded-lg text-sm font-semibold" href="/archive">
+        <i class="fa-solid fa-clock-rotate-left w-5"></i>
+        Archive
+      </a>
+    </nav>
+
+    <!-- Archive Info -->
+    <div class="bg-white/60 border border-gray-300/60 rounded-xl p-4 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+        Archive Summary
+      </p>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+          <span class="block text-[8px] font-bold text-blue-700 uppercase">
+            Records
+          </span>
+          <span class="text-2xl font-bold text-blue-900">
+            {{ records|length }}
+          </span>
+        </div>
+
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+          <span class="block text-[8px] font-bold text-red-700 uppercase">
+            Alerts
+          </span>
+          <span class="text-2xl font-bold text-red-900">
+            {{ records|selectattr("violations", "gt", 0)|list|length }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help Box -->
+    <div class="bg-white/60 border border-gray-300/60 rounded-xl p-4 shadow-sm">
+      <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+        Archive Purpose
+      </p>
+
+      <p class="text-xs text-gray-600 leading-relaxed">
+        This page stores processed detection results for later review, comparison,
+        and reporting.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 h-screen px-8 py-6 overflow-y-auto pb-24">
+
+    <!-- Header -->
+    <section class="flex items-start justify-between mb-6">
+      <div>
+        <h2 class="text-3xl font-bold gradient-title">
+          Detection Archive
+        </h2>
+
+        <p class="text-gray-600 font-medium mt-1">
+          Review previously processed helmet violation detection results.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-sm">
+          <i class="fa-solid fa-plus"></i>
+          New Detection
+        </a>
+
+        <button id="clearArchiveBtn" class="bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-sm">
+          <i class="fa-solid fa-trash"></i>
+          Clear Archive
+        </button>
+      </div>
+    </section>
+
+    <!-- Top Stats -->
+    <section class="grid grid-cols-4 gap-4 mb-6">
+
+      <div class="bg-white/70 border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            Total Records
+          </p>
+          <div class="w-9 h-9 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-database"></i>
+          </div>
+        </div>
+
+        <p class="text-3xl font-bold text-blue-900">
+          {{ records|length }}
+        </p>
+      </div>
+
+      <div class="bg-white/70 border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            Motorcycles
+          </p>
+          <div class="w-9 h-9 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-motorcycle"></i>
+          </div>
+        </div>
+
+        <p class="text-3xl font-bold text-blue-900">
+          {{ records|sum(attribute="motorcycles") }}
+        </p>
+      </div>
+
+      <div class="bg-white/70 border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            Helmets
+          </p>
+          <div class="w-9 h-9 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-helmet-safety"></i>
+          </div>
+        </div>
+
+        <p class="text-3xl font-bold text-emerald-900">
+          {{ records|sum(attribute="helmets") }}
+        </p>
+      </div>
+
+      <div class="bg-white/70 border border-gray-200 rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
+            Violations
+          </p>
+          <div class="w-9 h-9 bg-red-100 text-red-800 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+        </div>
+
+        <p class="text-3xl font-bold text-red-800">
+          {{ records|sum(attribute="violations") }}
+        </p>
+      </div>
+
+    </section>
+
+    <!-- Archive Records -->
+    {% if records|length == 0 %}
+
+      <section class="bg-white/70 border border-gray-200 rounded-3xl p-12 text-center shadow-sm">
+        <div class="w-16 h-16 mx-auto mb-5 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center">
+          <i class="fa-solid fa-folder-open text-2xl"></i>
+        </div>
+
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+          No Archive Records Yet
+        </h3>
+
+        <p class="text-gray-500 mb-6">
+          Run a detection from the dashboard and the result will appear here.
+        </p>
+
+        <a href="/" class="inline-flex items-center gap-2 bg-dashboard-accentBlue hover:bg-blue-900 text-white px-6 py-3 rounded-xl font-semibold">
+          <i class="fa-solid fa-play"></i>
+          Start Detection
+        </a>
+      </section>
+
+    {% else %}
+
+      <section class="space-y-5">
+
+        {% for item in records %}
+        <article class="bg-white/75 border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+
+          <!-- Record Header -->
+          <div class="flex items-start justify-between mb-4">
+
+            <div>
+              <div class="flex items-center gap-3 mb-1">
+                <h3 class="text-xl font-bold text-gray-900">
+                  {{ item.original_filename }}
+                </h3>
+
+                {% if item.violations > 0 %}
+                  <span class="bg-red-100 text-red-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                    VIOLATION
+                  </span>
+                {% elif item.checks and item.checks > 0 %}
+                  <span class="bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                    CHECK
+                  </span>
+                {% else %}
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                    SAFE
+                  </span>
+                {% endif %}
+              </div>
+
+              <p class="text-xs text-gray-500 font-mono">
+                {{ item.created_at }} • {{ item.resolution }} • {{ item.model }}
+              </p>
+            </div>
+
+            <div class="text-right">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Processing Time
+              </p>
+              <p class="text-sm font-bold text-dashboard-accentBlue">
+                {{ item.processing_time }} ms
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Images and Metrics -->
+          <div class="grid grid-cols-[1fr_1fr_260px] gap-5 items-stretch">
+
+            <!-- Input -->
+            <div>
+              <p class="text-xs font-bold text-blue-900 mb-2">
+                Original Input
+              </p>
+
+              <div class="h-[210px] bg-blue-50 border-4 border-blue-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                <img
+                  src="{{ item.input_url }}"
+                  alt="Original input"
+                  class="w-full h-full object-contain cursor-pointer"
+                  onclick="openImageModal('{{ item.input_url }}')"
+                />
+              </div>
+            </div>
+
+            <!-- Output -->
+            <div>
+              <p class="text-xs font-bold text-red-800 mb-2">
+                Detection Output
+              </p>
+
+              <div class="h-[210px] bg-red-50 border-4 border-red-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                <img
+                  src="{{ item.output_url }}"
+                  alt="Detection output"
+                  class="w-full h-full object-contain cursor-pointer"
+                  onclick="openImageModal('{{ item.output_url }}')"
+                />
+              </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="bg-dashboard-card/60 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between">
+
+              <div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                  Detection Metrics
+                </p>
+
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                    <span class="block text-[8px] font-bold text-blue-700 uppercase">
+                      Motorcycles
+                    </span>
+                    <span class="text-xl font-bold text-blue-900">
+                      {{ item.motorcycles }}
+                    </span>
+                  </div>
+
+                  <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                    <span class="block text-[8px] font-bold text-emerald-700 uppercase">
+                      Helmets
+                    </span>
+                    <span class="text-xl font-bold text-emerald-900">
+                      {{ item.helmets }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="bg-red-700 text-white rounded-lg p-3 text-center mb-3">
+                  <span class="block text-[8px] font-bold uppercase opacity-90">
+                    Violations
+                  </span>
+                  <span class="text-2xl font-bold">
+                    {{ item.violations }}
+                  </span>
+                </div>
+
+                {% if item.checks is defined %}
+                <div class="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-3 text-center">
+                  <span class="block text-[8px] font-bold uppercase">
+                    Check / Uncertain
+                  </span>
+                  <span class="text-xl font-bold">
+                    {{ item.checks }}
+                  </span>
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="pt-3 mt-3 border-t border-gray-300/40 flex items-center justify-between">
+                <span class="text-xs font-medium text-gray-500">
+                  Avg Confidence
+                </span>
+                <span class="text-sm font-bold text-blue-900">
+                  {{ item.avg_confidence }}%
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+        </article>
+        {% endfor %}
+
+      </section>
+
+    {% endif %}
+
+  </main>
+
+  <!-- Image Preview Modal -->
+  <div id="imageModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-8">
+    <div class="relative max-w-5xl w-full bg-[#f4f1e6] rounded-3xl p-5 shadow-2xl">
+      <button
+        onclick="closeImageModal()"
+        class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 z-10"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <img
+        id="modalImage"
+        src=""
+        alt="Preview"
+        class="w-full max-h-[80vh] object-contain rounded-2xl"
+      />
+    </div>
+  </div>
+
+  <script>
+    const imageModal = document.getElementById("imageModal");
+    const modalImage = document.getElementById("modalImage");
+    const clearArchiveBtn = document.getElementById("clearArchiveBtn");
+
+    function openImageModal(imageUrl) {
+      modalImage.src = imageUrl;
+      imageModal.classList.remove("hidden");
+      imageModal.classList.add("flex");
+    }
+
+    function closeImageModal() {
+      imageModal.classList.add("hidden");
+      imageModal.classList.remove("flex");
+      modalImage.src = "";
+    }
+
+    imageModal.addEventListener("click", function (event) {
+      if (event.target === imageModal) {
+        closeImageModal();
+      }
+    });
+
+    clearArchiveBtn.addEventListener("click", async function () {
+      const confirmed = confirm("Are you sure you want to clear the archive?");
+
+      if (!confirmed) {
+        return;
+      }
+
+      const response = await fetch("/api/archive/clear", {
+        method: "POST"
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert("Archive could not be cleared.");
+      }
+    });
+  </script>
+
+</body>
+</html>
