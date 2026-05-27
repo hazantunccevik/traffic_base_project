@@ -54,9 +54,18 @@
         Helmet Violation Detection Pipeline
       </p>
 
-      <div class="mt-4 flex items-center gap-2 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1.5 rounded-full w-fit">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        SYSTEM STATUS: ACTIVE
+      <div 
+        id="systemStatusBadge"
+        class="mt-4 flex items-center gap-2 bg-yellow-100 text-yellow-800 text-[10px] font-bold px-3 py-1.5 rounded-full w-fit"
+      >
+        <span 
+          id="systemStatusDot"
+          class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"
+        ></span>
+
+        <span id="systemStatusText">
+          SYSTEM STATUS: CHECKING
+        </span>
       </div>
     </div>
 
@@ -69,7 +78,7 @@
 
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/performance">
         <i class="fa-solid fa-motorcycle w-5"></i>
-        Performance / Analytics 
+        Performance Analytics 
       </a>
 
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/methodology">
@@ -80,6 +89,11 @@
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/archive">
         <i class="fa-solid fa-clock-rotate-left w-5"></i>
         Archive
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/review-candidates">
+        <i class="fa-solid fa-clipboard-check w-5"></i>
+        Review Candidates
       </a>
     </nav>
 
@@ -135,8 +149,13 @@
           </div>
 
           <div class="text-right leading-tight">
-            <span id="processingTime" class="text-sm font-bold block text-red-700">0 ms</span>
-            <span class="text-[10px] font-bold text-gray-500 uppercase">image</span>
+            <span id="processingTime" class="text-sm font-bold block text-red-700">
+              0 ms
+            </span>
+
+            <span id="fileTypeText" class="text-[10px] font-bold text-gray-500 uppercase">
+              IMAGE
+            </span> 
           </div>
         </div>
 
@@ -147,7 +166,9 @@
 
         <div class="flex items-center justify-between">
           <span class="text-[11px] font-medium text-gray-500">Model</span>
-          <span class="text-[11px] font-bold text-dashboard-accentBlue">YOLO ROI Pipeline</span>
+          <span class="text-[11px] font-bold text-dashboard-accentBlue">
+            YOLO ROI Pipeline
+          </span>
         </div>
       </div>
     </div>
@@ -183,20 +204,36 @@
 
     <!-- Recent Uploads -->
     <section class="mb-5">
-        <h3 class="text-lg font-bold mb-3 text-gray-900">Recent Uploads</h3>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-gray-900">Recent Uploads</h3>
 
+        <button
+          id="toggleRecentUploadsBtn"
+          type="button"
+          class="text-[10px] font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+        >
+         HIDE
+        </button>
+      </div>
+
+      <div id="recentUploadsWrapper">
         <div id="recentUploads" class="flex gap-4 overflow-x-auto hide-scrollbar pb-1">
 
-            <div id="newUploadCard" class="flex-none w-[125px] bg-white/40 border-2 border-dashed border-blue-300 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-blue-50 transition-colors">
-                <div class="w-8 h-8 rounded-full border border-blue-400 flex items-center justify-center text-blue-500">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                </div>
+          <div
+            id="newUploadCard"
+            class="flex-none w-[125px] bg-white/40 border-2 border-dashed border-blue-300 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-blue-50 transition-colors"
+          >
+            <div class="w-8 h-8 rounded-full border border-blue-400 flex items-center justify-center text-blue-500">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </div>
 
             <span class="text-[10px] font-bold text-blue-700 uppercase tracking-tight">
-                New Upload
+              New Upload
             </span>
-            </div>
+          </div>
+          
         </div>
+      </div>
     </section>
 
     <!-- Original Input and Detection Output -->
@@ -213,11 +250,21 @@
         </div>
 
         <div class="h-[270px] bg-blue-50 rounded-3xl overflow-hidden border-4 border-blue-100 shadow-xl flex items-center justify-center relative">
-          <img id="originalInputImage" alt="Original Input Image" class="w-full h-full object-contain hidden" />
+           <div class="w-full h-full flex items-center justify-center bg-blue-50">
+            <img 
+              id="originalInputImage" 
+              alt="Original Input Image" 
+              class="w-full h-full object-contain hidden" 
+            />
 
-          <video id="originalInputVideo" class="w-full h-full object-contain hidden" controls></video>
+            <video 
+              id="originalInputVideo" 
+              class="max-w-full max-h-full object-contain hidden" 
+              controls>
+            </video>
+          </div>
 
-          <div id="originalPlaceholder" class="text-center text-blue-400">
+          <div id="originalPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center text-blue-400">
             <i class="fa-solid fa-cloud-arrow-up text-5xl mb-4"></i>
             <p class="text-sm font-semibold">Upload an image or video</p>
           </div>
@@ -247,11 +294,21 @@
         </div>
 
         <div class="h-[270px] bg-red-50 rounded-3xl overflow-hidden border-4 border-red-100 shadow-xl flex items-center justify-center relative">
-          <img id="detectionOutputImage" alt="Detection Output Image" class="w-full h-full object-contain hidden" />
+          <div class="w-full h-full flex items-center justify-center bg-red-50">
+            <img 
+              id="detectionOutputImage" 
+              alt="Detection Output Image" 
+              class="w-full h-full object-contain hidden" 
+            />
 
-          <video id="detectionOutputVideo" class="w-full h-full object-contain hidden" controls></video>
+            <video 
+              id="detectionOutputVideo" 
+              class="max-w-full max-h-full object-contain hidden" 
+              controls>
+            </video>
+          </div>
 
-          <div id="outputPlaceholder" class="text-center text-red-300">
+          <div id="outputPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center text-red-300">
             <i class="fa-solid fa-magnifying-glass-chart text-5xl mb-4"></i>
             <p class="text-sm font-semibold">Detection result will appear here</p>
           </div>
@@ -334,6 +391,11 @@
   </div>
 
   <!-- Custom JS -->
+  <script src="{{ url_for('static', filename='js/dom.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/systemStatus.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/recentUploads.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/detection.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

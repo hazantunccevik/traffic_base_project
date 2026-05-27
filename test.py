@@ -4,11 +4,11 @@ from ultralytics import YOLO
 from pathlib import Path
 
 # Load Models
-MOTOR_MODEL = YOLO('yolov8s.pt') 
+MOTOR_MODEL = YOLO('yolov8m.pt') 
 HELMET_MODEL = YOLO(r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\detect_helmet_detect\runs\helmet_detection\v12\weights\best.pt")
 
 SOURCE_PATH = r"C:\Users\Lenovo\Desktop\traffic_base_project\datasets\test_images_v1"
-OUTPUT_DIR = r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\presentation_ready"
+OUTPUT_DIR = r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\p1"
 
 def process_image(image_path):
     img = cv2.imread(str(image_path))

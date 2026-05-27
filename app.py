@@ -15,6 +15,12 @@ from archieve_man import (
     calculate_performance_metrics
 )
 
+from feedback_man import (
+    load_feedback,
+    add_or_update_feedback,
+    get_feedback_by_archive_id 
+)
+
 app = Flask(__name__)
 
 # =========================================================
@@ -60,7 +66,18 @@ def methodology():
 @app.route("/archive")
 def archive():
     records = load_archive()
-    return render_template("archive.html", records=records)
+    feedback_records = load_feedback()
+
+    feedback_map = {
+        feedback.get("archive_id"): feedback
+        for feedback in feedback_records
+    }
+
+    return render_template(
+        "archive.html",
+        records=records,
+        feedback_map=feedback_map
+    )
 
 @app.route("/performance")
 def performance():
@@ -72,6 +89,7 @@ def performance():
         records=records,
         **metrics
     )
+
 # =========================================================
 # IMAGE DETECTION API
 # This route handles image uploads from the frontend
@@ -135,7 +153,8 @@ def detect():
             "type": "image",
             "input_url": input_url,
             "output_url": output_url,
-            "summary": summary
+            "summary": summary,
+            "record": archive_record
         })
 
     except Exception as e:
@@ -207,7 +226,8 @@ def detect_video():
             "type": "video",
             "input_url": input_url,
             "output_url": output_url,
-            "summary": summary 
+            "summary": summary,
+            "record": archive_record
         })
 
     except Exception as e:
@@ -217,8 +237,23 @@ def detect_video():
         }), 500
 
 # =========================================================
+# RECENT UPLOADS API
+# Used by dashboard Recent Uploads section.
+# Returns latest archive records.
+# =========================================================
+
+@app.route("/api/recent-uploads", methods=["GET"])
+def recent_uploads():
+    records = load_archive()
+
+    return jsonify({
+        "success": True,
+        "uploads": records[:6]
+    })
+
+# =========================================================
 # ARCHIVE API
-#Clears all saved archive records.
+# Clears all saved archive records.
 # This route is used by the Clear Archive button in archive.html.
 # =========================================================
 
@@ -233,6 +268,93 @@ def clear_archive_route():
     return jsonify({
         "success": True,
         "message": "Archive cleared successfully."
+    })
+
+# =========================================================
+# ARCHIVE FEEDBACK API
+# Stores user feedback for archive records.
+# =========================================================
+
+@app.route("/api/archive/feedback", methods=["POST"])
+def save_archive_feedback():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "success": False,
+            "message": "No feedback data received."
+        }), 400
+
+    archive_id = data.get("archive_id")
+    filename = data.get("filename")
+    feedback = data.get("feedback")
+    note = data.get("note", "")
+
+    corrected_motorcycles = data.get("corrected_motorcycles")
+    corrected_helmets = data.get("corrected_helmets")
+    corrected_violations = data.get("corrected_violations")
+
+    allowed_feedback = ["correct", "needs_review", "wrong_detection"]
+
+    if not archive_id or not filename or feedback not in allowed_feedback:
+        return jsonify({
+            "success": False,
+            "message": "Invalid feedback data."
+        }), 400
+
+    saved_record = add_or_update_feedback(
+        archive_id=archive_id,
+        filename=filename,
+        feedback=feedback,
+        note=note,
+        corrected_motorcycles=corrected_motorcycles,
+        corrected_helmets=corrected_helmets,
+        corrected_violations=corrected_violations
+    )
+
+    return jsonify({
+        "success": True,
+        "message": "Feedback saved successfully.",
+        "feedback": saved_record
+    })
+
+# =========================================================
+# Review Candidates API
+# This page shows all archive records that 
+# have been marked as "needs_review" or "wrong_detection" by users.
+# =========================================================
+@app.route("/review-candidates")
+def review_candidates():
+    feedback_records = load_feedback()
+
+    wrong_records = [
+        record for record in feedback_records
+        if record.get("feedback") in ["needs_review", "wrong_detection"]
+    ]
+
+    correct_records = [
+        record for record in feedback_records
+        if record.get("feedback") == "correct"
+    ]
+
+    return render_template(
+        "review_candidates.html",
+        feedback_records=feedback_records,
+        wrong_records=wrong_records,
+        correct_records=correct_records
+    )
+
+# =========================================================
+# SYSTEM HEALTH API
+# Used by dashboard system status badge.
+# =========================================================
+
+@app.route("/api/system-status", methods=["GET"])
+def system_status():
+    return jsonify({
+        "success": True,
+        "status": "ready",
+        "message": "SYSTEM READY"
     })
 
 # =========================================================

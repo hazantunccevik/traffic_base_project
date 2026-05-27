@@ -65,7 +65,7 @@
 
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/performance">
         <i class="fa-solid fa-motorcycle w-5"></i>
-        Performance / Analytics
+        Performance Analytics
       </a>
 
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/methodology">
@@ -76,6 +76,11 @@
       <a class="flex items-center gap-3 px-4 py-2.5 bg-blue-100 text-blue-900 rounded-lg text-sm font-semibold" href="/archive">
         <i class="fa-solid fa-clock-rotate-left w-5"></i>
         Archive
+      </a>
+
+      <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/review-candidates">
+        <i class="fa-solid fa-clipboard-check w-5"></i>
+        Review Candidates
       </a>
     </nav>
 
@@ -132,6 +137,41 @@
         <p class="text-gray-600 font-medium mt-1">
           Review previously processed helmet violation detection results.
         </p>
+
+        <!-- Archive Filters -->
+        <div class="flex flex-wrap items-center gap-2 mt-4">
+          <button
+            type="button"
+            data-filter="all"
+            class="archive-filter-btn bg-blue-100 text-blue-800 border border-blue-200 text-[11px] font-bold px-4 py-1.5 rounded-full transition"
+          >
+            ALL
+          </button>
+
+          <button
+            type="button"
+            data-filter="safe"
+            class="archive-filter-btn bg-white text-gray-600 border border-gray-200 text-[11px] font-bold px-4 py-1.5 rounded-full hover:bg-emerald-50 hover:text-emerald-700 transition"
+          >
+            SAFE
+          </button>
+
+          <button
+            type="button"
+            data-filter="check"
+            class="archive-filter-btn bg-white text-gray-600 border border-gray-200 text-[11px] font-bold px-4 py-1.5 rounded-full hover:bg-orange-50 hover:text-orange-700 transition"
+          >
+            CHECK
+          </button>
+
+          <button
+            type="button"
+            data-filter="violation"
+            class="archive-filter-btn bg-white text-gray-600 border border-gray-200 text-[11px] font-bold px-4 py-1.5 rounded-full hover:bg-red-50 hover:text-red-700 transition"
+          >
+            VIOLATIONS
+          </button>
+        </div>
       </div>
 
       <div class="flex items-center gap-3">
@@ -155,6 +195,7 @@
           <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
             Total Records
           </p>
+
           <div class="w-9 h-9 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center">
             <i class="fa-solid fa-database"></i>
           </div>
@@ -170,6 +211,7 @@
           <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
             Motorcycles
           </p>
+
           <div class="w-9 h-9 bg-blue-100 text-blue-800 rounded-xl flex items-center justify-center">
             <i class="fa-solid fa-motorcycle"></i>
           </div>
@@ -185,6 +227,7 @@
           <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
             Helmets
           </p>
+
           <div class="w-9 h-9 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center">
             <i class="fa-solid fa-helmet-safety"></i>
           </div>
@@ -200,6 +243,7 @@
           <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">
             Violations
           </p>
+
           <div class="w-9 h-9 bg-red-100 text-red-800 rounded-xl flex items-center justify-center">
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
@@ -236,146 +280,305 @@
 
     {% else %}
 
+      {% set feedback_map = feedback_map|default({}) %}
+
       <section class="space-y-5">
 
         {% for item in records %}
-        <article class="bg-white/75 border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all">
+        {% set feedback = feedback_map.get(item.id) %}
 
+        <article
+          id="record-{{ item.id }}"
+          class="archive-record-card bg-white/75 border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all scroll-mt-6"
+          data-status="{% if item.violations > 0 %}violation{% elif item.checks and item.checks > 0 %}check{% else %}safe{% endif %}"
+        >
           <!-- Record Header -->
-          <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center justify-between gap-4">
 
-            <div>
+            <!-- Left: File Info -->
+            <div class="min-w-0">
               <div class="flex items-center gap-3 mb-1">
-                <h3 class="text-xl font-bold text-gray-900">
+                <h3 class="text-xl font-bold text-gray-900 truncate max-w-[620px]">
                   {{ item.original_filename }}
                 </h3>
 
                 {% if item.violations > 0 %}
-                  <span class="bg-red-100 text-red-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                  <span class="bg-red-100 text-red-800 text-[10px] font-bold px-3 py-1 rounded-full shrink-0">
                     VIOLATION
                   </span>
                 {% elif item.checks and item.checks > 0 %}
-                  <span class="bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                  <span class="bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full shrink-0">
                     CHECK
                   </span>
                 {% else %}
-                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full">
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full shrink-0">
                     SAFE
                   </span>
                 {% endif %}
               </div>
 
-              <p class="text-xs text-gray-500 font-mono">
+              <p class="text-xs text-gray-500 font-mono truncate">
                 {{ item.created_at }} • {{ item.resolution }} • {{ item.model }}
               </p>
             </div>
 
-            <div class="text-right">
-              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Processing Time
-              </p>
-              <p class="text-sm font-bold text-dashboard-accentBlue">
-                {{ item.processing_time }} ms
-              </p>
-            </div>
-
-          </div>
-
-          <!-- Images and Metrics -->
-          <div class="grid grid-cols-[1fr_1fr_260px] gap-5 items-stretch">
-
-            <!-- Input -->
-            <div>
-              <p class="text-xs font-bold text-blue-900 mb-2">
-                Original Input
-              </p>
-
-              <div class="h-[210px] bg-blue-50 border-4 border-blue-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img
-                  src="{{ item.input_url }}"
-                  alt="Original input"
-                  class="w-full h-full object-contain cursor-pointer"
-                  onclick="openImageModal('{{ item.input_url }}')"
-                />
-              </div>
-            </div>
-
-            <!-- Output -->
-            <div>
-              <p class="text-xs font-bold text-red-800 mb-2">
-                Detection Output
-              </p>
-
-              <div class="h-[210px] bg-red-50 border-4 border-red-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img
-                  src="{{ item.output_url }}"
-                  alt="Detection output"
-                  class="w-full h-full object-contain cursor-pointer"
-                  onclick="openImageModal('{{ item.output_url }}')"
-                />
-              </div>
-            </div>
-
-            <!-- Metrics -->
-            <div class="bg-dashboard-card/60 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between">
-
-              <div>
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
-                  Detection Metrics
+            <!-- Right: Compact Metrics -->
+            <div class="flex items-center gap-5 shrink-0">
+              <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Violations
                 </p>
 
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                    <span class="block text-[8px] font-bold text-blue-700 uppercase">
-                      Motorcycles
-                    </span>
-                    <span class="text-xl font-bold text-blue-900">
-                      {{ item.motorcycles }}
-                    </span>
-                  </div>
-
-                  <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
-                    <span class="block text-[8px] font-bold text-emerald-700 uppercase">
-                      Helmets
-                    </span>
-                    <span class="text-xl font-bold text-emerald-900">
-                      {{ item.helmets }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="bg-red-700 text-white rounded-lg p-3 text-center mb-3">
-                  <span class="block text-[8px] font-bold uppercase opacity-90">
-                    Violations
-                  </span>
-                  <span class="text-2xl font-bold">
-                    {{ item.violations }}
-                  </span>
-                </div>
-
-                {% if item.checks is defined %}
-                <div class="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-3 text-center">
-                  <span class="block text-[8px] font-bold uppercase">
-                    Check / Uncertain
-                  </span>
-                  <span class="text-xl font-bold">
-                    {{ item.checks }}
-                  </span>
-                </div>
-                {% endif %}
+                <p class="text-sm font-bold {% if item.violations > 0 %}text-red-800{% else %}text-emerald-800{% endif %}">
+                  {{ item.violations }}
+                </p>
               </div>
 
-              <div class="pt-3 mt-3 border-t border-gray-300/40 flex items-center justify-between">
-                <span class="text-xs font-medium text-gray-500">
-                  Avg Confidence
-                </span>
-                <span class="text-sm font-bold text-blue-900">
+              <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Confidence
+                </p>
+
+                <p class="text-sm font-bold text-dashboard-accentBlue">
                   {{ item.avg_confidence }}%
-                </span>
+                </p>
               </div>
 
-            </div>
+              <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  Processing Time
+                </p>
 
+                <p class="text-sm font-bold text-dashboard-accentBlue">
+                  {{ item.processing_time }} ms
+                </p>
+              </div>
+
+              <button
+                type="button"
+                class="archive-toggle-btn bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 px-4 py-2 rounded-lg text-xs font-bold transition-all"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <!-- Details Area -->
+          <div class="archive-details hidden mt-5 pt-5 border-t border-gray-200/70">
+            <div class="grid grid-cols-[1fr_1fr_260px] gap-5 items-stretch">
+
+              <!-- Original Input -->
+              <div>
+                <p class="text-xs font-bold text-blue-900 mb-2">
+                  Original Input
+                </p>
+
+                <div class="h-[190px] bg-blue-50 border-4 border-blue-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                  <img
+                    src="{{ item.input_url }}"
+                    alt="Original input"
+                    class="w-full h-full object-contain cursor-pointer"
+                    onclick="openImageModal('{{ item.input_url }}')"
+                  />
+                </div>
+              </div>
+
+              <!-- Detection Output -->
+              <div>
+                <p class="text-xs font-bold text-red-800 mb-2">
+                  Detection Output
+                </p>
+
+                <div class="h-[190px] bg-red-50 border-4 border-red-100 rounded-2xl overflow-hidden flex items-center justify-center">
+                  <img
+                    src="{{ item.output_url }}"
+                    alt="Detection output"
+                    class="w-full h-full object-contain cursor-pointer"
+                    onclick="openImageModal('{{ item.output_url }}')"
+                  />
+                </div>
+              </div>
+
+              <!-- Metrics and Feedback -->
+              <div class="bg-dashboard-card/60 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between">
+
+                <!-- Detection Metrics -->
+                <div>
+                  <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                    Detection Metrics
+                  </p>
+
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                      <span class="block text-[8px] font-bold text-blue-700 uppercase">
+                        Motorcycles
+                      </span>
+
+                      <span class="text-xl font-bold text-blue-900">
+                        {{ item.motorcycles }}
+                      </span>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                      <span class="block text-[8px] font-bold text-emerald-700 uppercase">
+                        Helmets
+                      </span>
+
+                      <span class="text-xl font-bold text-emerald-900">
+                        {{ item.helmets }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="bg-red-700 text-white rounded-lg p-3 text-center mb-3">
+                    <span class="block text-[8px] font-bold uppercase opacity-90">
+                      Violations
+                    </span>
+
+                    <span class="text-2xl font-bold">
+                      {{ item.violations }}
+                    </span>
+                  </div>
+
+                  {% if item.checks is defined %}
+                  <div class="bg-orange-50 border border-orange-200 text-orange-800 rounded-lg p-3 text-center">
+                    <span class="block text-[8px] font-bold uppercase">
+                      Check / Uncertain
+                    </span>
+
+                    <span class="text-xl font-bold">
+                      {{ item.checks }}
+                    </span>
+                  </div>
+                  {% endif %}
+                </div>
+
+                <!-- Avg Confidence -->
+                <div class="pt-3 mt-3 border-t border-gray-300/40 flex items-center justify-between">
+                  <span class="text-xs font-medium text-gray-500">
+                    Avg Confidence
+                  </span>
+
+                  <span class="text-sm font-bold text-blue-900">
+                    {{ item.avg_confidence }}%
+                  </span>
+                </div>
+
+                <!-- Human Feedback and Correction Panel -->
+                <div
+                  class="feedback-panel pt-3 mt-3 border-t border-gray-300/40"
+                  data-archive-id="{{ item.id }}"
+                  data-filename="{{ item.original_filename }}"
+                >
+                  <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                    User Feedback
+                  </p>
+
+                  <div class="grid grid-cols-1 gap-2">
+                    <button
+                      type="button"
+                      class="feedback-btn bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg px-3 py-2 text-[10px] font-bold transition {% if feedback and feedback.feedback == 'correct' %}ring-2 ring-offset-1 ring-emerald-300{% endif %}"
+                      data-feedback="correct"
+                    >
+                      <i class="fa-solid fa-check mr-1"></i>
+                      Correct
+                    </button>
+
+                    <button
+                      type="button"
+                      class="feedback-btn bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 rounded-lg px-3 py-2 text-[10px] font-bold transition {% if feedback and feedback.feedback == 'needs_review' %}ring-2 ring-offset-1 ring-orange-300{% endif %}"
+                      data-feedback="needs_review"
+                    >
+                      <i class="fa-solid fa-circle-question mr-1"></i>
+                      Needs Review
+                    </button>
+
+                    <button
+                      type="button"
+                      class="feedback-btn bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 rounded-lg px-3 py-2 text-[10px] font-bold transition {% if feedback and feedback.feedback == 'wrong_detection' %}ring-2 ring-offset-1 ring-red-300{% endif %}"
+                      data-feedback="wrong_detection"
+                    >
+                      <i class="fa-solid fa-xmark mr-1"></i>
+                      Wrong Detection
+                    </button>
+                  </div>
+
+                  <!-- Correction Panel -->
+                  <div class="correction-panel {% if feedback and feedback.feedback in ['needs_review', 'wrong_detection'] %}{% else %}hidden{% endif %} bg-white/70 border border-gray-200 rounded-xl p-3 mt-3">
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
+                      Correction Values
+                    </p>
+
+                    <div class="grid grid-cols-1 gap-2 mb-3">
+                      <div>
+                        <label class="block text-[9px] font-bold text-gray-500 uppercase mb-1">
+                          Motorcycles
+                        </label>
+
+                        <input
+                          type="number"
+                          min="0"
+                          class="corrected-motorcycles w-full rounded-lg border-gray-300 text-xs px-2 py-1.5"
+                          value="{% if feedback and feedback.corrected_motorcycles is defined and feedback.corrected_motorcycles is not none %}{{ feedback.corrected_motorcycles }}{% else %}{{ item.motorcycles }}{% endif %}"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-[9px] font-bold text-gray-500 uppercase mb-1">
+                          Helmets
+                        </label>
+
+                        <input
+                          type="number"
+                          min="0"
+                          class="corrected-helmets w-full rounded-lg border-gray-300 text-xs px-2 py-1.5"
+                          value="{% if feedback and feedback.corrected_helmets is defined and feedback.corrected_helmets is not none %}{{ feedback.corrected_helmets }}{% else %}{{ item.helmets }}{% endif %}"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-[9px] font-bold text-gray-500 uppercase mb-1">
+                          Violations
+                        </label>
+
+                        <input
+                          type="number"
+                          min="0"
+                          class="corrected-violations w-full rounded-lg border-gray-300 text-xs px-2 py-1.5"
+                          value="{% if feedback and feedback.corrected_violations is defined and feedback.corrected_violations is not none %}{{ feedback.corrected_violations }}{% else %}{{ item.violations }}{% endif %}"
+                        />
+                      </div>
+                    </div>
+
+                    <label class="block text-[9px] font-bold text-gray-500 uppercase mb-1">
+                      Correction Note
+                    </label>
+
+                    <textarea
+                      class="correction-note w-full rounded-lg border-gray-300 text-xs px-2 py-2 resize-none"
+                      rows="3"
+                      placeholder="Example: Helmet was detected as no_helmet incorrectly."
+                    >{% if feedback and feedback.note %}{{ feedback.note }}{% endif %}</textarea>
+
+                    <button
+                      type="button"
+                      class="save-correction-btn w-full mt-3 bg-dashboard-accentBlue hover:bg-blue-900 text-white rounded-lg px-3 py-2.5 text-[10px] font-bold transition"
+                    >
+                      Save Correction
+                    </button>
+                  </div>
+
+                  <p class="feedback-status text-[10px] mt-2 {% if feedback %}text-emerald-700{% else %}text-gray-500 hidden{% endif %}">
+                    {% if feedback %}
+                      Current feedback: {{ feedback.feedback.replace("_", " ") }}
+                    {% else %}
+                      Feedback saved.
+                    {% endif %}
+                  </p>
+                </div>
+
+              </div>
+            </div>
           </div>
         </article>
         {% endfor %}
@@ -405,49 +608,7 @@
     </div>
   </div>
 
-  <script>
-    const imageModal = document.getElementById("imageModal");
-    const modalImage = document.getElementById("modalImage");
-    const clearArchiveBtn = document.getElementById("clearArchiveBtn");
-
-    function openImageModal(imageUrl) {
-      modalImage.src = imageUrl;
-      imageModal.classList.remove("hidden");
-      imageModal.classList.add("flex");
-    }
-
-    function closeImageModal() {
-      imageModal.classList.add("hidden");
-      imageModal.classList.remove("flex");
-      modalImage.src = "";
-    }
-
-    imageModal.addEventListener("click", function (event) {
-      if (event.target === imageModal) {
-        closeImageModal();
-      }
-    });
-
-    clearArchiveBtn.addEventListener("click", async function () {
-      const confirmed = confirm("Are you sure you want to clear the archive?");
-
-      if (!confirmed) {
-        return;
-      }
-
-      const response = await fetch("/api/archive/clear", {
-        method: "POST"
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        window.location.reload();
-      } else {
-        alert("Archive could not be cleared.");
-      }
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/archive.js') }}"></script>
 
 </body>
 </html>
