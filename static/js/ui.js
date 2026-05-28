@@ -463,3 +463,30 @@ function setupRecentUploadsToggle() {
     }
   });
 }
+
+/*
+=====================================================
+Triple Riding Warning Popup
+=====================================================
+
+Shows a warning popup when triple riding is detected.
+This function uses the existing Status Modal component.
+*/
+
+function showTripleRidingWarning(data) {
+  if (!data) return;
+
+  const summary = data.summary || data;
+
+  if (!summary.triple_riding_detected) return;
+
+  const message =
+    summary.popup_message ||
+    "Triple riding detected. Three riders were detected on the same motorcycle.";
+
+  showStatusModal(
+    "error",
+    "Triple Riding Detected",
+    message
+  );
+}

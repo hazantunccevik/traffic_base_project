@@ -1,5 +1,37 @@
 [
     {
+        "id": "fcbe8c4d-25dd-4fba-8eda-74965e02b249",
+        "type": "video",
+        "original_filename": "Ekran_Kayd_2026-05-28_193656.mp4",
+        "input_url": "/static/uploads/fcbe8c4d-25dd-4fba-8eda-74965e02b249.mp4",
+        "output_url": "/static/outputs/fcbe8c4d-25dd-4fba-8eda-74965e02b249_result.mp4",
+        "motorcycles": 3,
+        "helmets": 2,
+        "violations": 3,
+        "checks": 0,
+        "avg_confidence": 49,
+        "processing_time": 31568,
+        "resolution": "872x756",
+        "model": "YOLO ROI Pipeline",
+        "created_at": "2026-05-28 20:05:18"
+    },
+    {
+        "id": "326726a0-3bc4-40c7-9f77-43c426a33141",
+        "type": "image",
+        "original_filename": "image10.jpg",
+        "input_url": "/static/uploads/326726a0-3bc4-40c7-9f77-43c426a33141.jpg",
+        "output_url": "/static/outputs/326726a0-3bc4-40c7-9f77-43c426a33141_result.jpg",
+        "motorcycles": 2,
+        "helmets": 0,
+        "violations": 2,
+        "checks": 0,
+        "avg_confidence": 67,
+        "processing_time": 11723,
+        "resolution": "242x208",
+        "model": "YOLO ROI Pipeline",
+        "created_at": "2026-05-28 19:34:50"
+    },
+    {
         "id": "35ed24bd-5d54-40a8-ace9-6c765041e095",
         "type": "image",
         "original_filename": "0d52f450b75dae9a_jpg.rf.ecb28494f8638ee6d22a0088ffbe99ec.jpg",

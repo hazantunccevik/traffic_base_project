@@ -39,10 +39,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body class="min-h-screen overflow-hidden flex">
+<body class="min-h-screen flex bg-dashboard-beige overflow-y-auto">
 
   <!-- Sidebar -->
-  <aside class="w-[280px] h-screen border-r border-gray-300/50 px-6 py-6 flex flex-col gap-5 shrink-0">
+  <aside class="w-[280px] min-h-screen border-r border-gray-300/50 px-6 py-6 flex flex-col gap-5 shrink-0">
 
     <!-- Logo / Title -->
     <div class="space-y-1">
@@ -175,7 +175,7 @@
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-1 h-screen px-8 py-5 overflow-y-auto">
+  <main class="flex-1 min-h-screen px-8 py-5">
 
     <!-- Header -->
     <div class="flex justify-between items-start mb-4">

@@ -112,10 +112,12 @@ function setupDetectionHandler(getSelectedMediaFile) {
       */
       if (isImage) {
         handleImageDetectionResult(data);
+        showTripleRidingWarning(data);
       }
 
       if (isVideo) {
         handleVideoDetectionResult(data);
+        showTripleRidingWarning(data);
       }
 
       /*

@@ -154,7 +154,9 @@ def detect():
             "input_url": input_url,
             "output_url": output_url,
             "summary": summary,
-            "record": archive_record
+            "record": archive_record,
+            "triple_riding_detected": summary.get("triple_riding_detected", False),
+            "popup_message": summary.get("popup_message", "")
         })
 
     except Exception as e:
@@ -227,7 +229,9 @@ def detect_video():
             "input_url": input_url,
             "output_url": output_url,
             "summary": summary,
-            "record": archive_record
+            "record": archive_record,
+            "triple_riding_detected": summary.get("triple_riding_detected", False),
+            "popup_message": summary.get("popup_message", "")  
         })
 
     except Exception as e:
