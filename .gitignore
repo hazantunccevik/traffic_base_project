@@ -15,6 +15,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+archive_data.json
+feedback_data.json
+
 static/uploads/
 static/outputs/
 *.mp4
