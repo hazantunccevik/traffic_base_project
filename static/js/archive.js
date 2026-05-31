@@ -404,4 +404,33 @@ function openRecordFromUrlHash() {
   }, 2500);
 }
 
+
+function openVideoModal(videoUrl) {
+  const modal = document.getElementById("videoModal");
+  const video = document.getElementById("modalVideo");
+
+  if (!modal || !video) return;
+
+  video.src = videoUrl;
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  video.play();
+}
+
+function closeVideoModal() {
+  const modal = document.getElementById("videoModal");
+  const video = document.getElementById("modalVideo");
+
+  if (!modal || !video) return;
+
+  video.pause();
+  video.currentTime = 0;
+  video.src = "";
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+window.openVideoModal = openVideoModal;
+window.closeVideoModal = closeVideoModal;
+
 openRecordFromUrlHash();

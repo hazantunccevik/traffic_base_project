@@ -1,120 +1,143 @@
-import datetime
-
 import cv2
 import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
-import time 
+import time
+from itertools import combinations
+
 
 # =========================================================
 # 1. LOAD MODELS
 # =========================================================
 MOTOR_MODEL = YOLO("yolo11s.pt")
-HELMET_MODEL = YOLO(r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt")
+HELMET_MODEL = YOLO(
+    r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt"
+)
 
 
 # =========================================================
-# Triple Riding Geometry Check
+# Triple Riding Check
 # =========================================================
-def are_three_heads_side_by_side(head_boxes):
+def are_three_riders_present(head_boxes, motor_box):
     """
-    Checks whether at least three detected head/helmet boxes are side by side.
+    Detects triple riding by checking if 3 or more heads/helmets are present
+    within or near the motorcycle bounding box.
 
-    This function is used frame-by-frame in the video pipeline.
-    The result is then stabilized using triple_hits / frames_seen.
-
-    head_boxes format:
-    [
-        (x1, y1, x2, y2),
-        (x1, y1, x2, y2),
-        ...
-    ]
+    It supports:
+    - front-to-back rider layout,
+    - side-by-side layout,
+    - diagonal layout.
     """
 
     if len(head_boxes) < 3:
         return False
 
-    # Sort boxes from left to right.
-    boxes = sorted(head_boxes, key=lambda b: (b[0] + b[2]) / 2)
+    x1m, y1m, x2m, y2m = motor_box
+    motor_w = x2m - x1m
+    motor_h = y2m - y1m
 
-    for i in range(len(boxes) - 2):
-        group = boxes[i:i + 3]
+    valid_boxes = []
 
-        centers = []
-        widths = []
-        heights = []
+    for box in head_boxes:
+        bx1, by1, bx2, by2 = box
+        bw = bx2 - bx1
+        bh = by2 - by1
 
-        for box in group:
-            x1, y1, x2, y2 = box
-
-            box_w = x2 - x1
-            box_h = y2 - y1
-
-            if box_w <= 0 or box_h <= 0:
-                continue
-
-            center_x = (x1 + x2) / 2
-            center_y = (y1 + y2) / 2
-
-            centers.append((center_x, center_y))
-            widths.append(box_w)
-            heights.append(box_h)
-
-        if len(centers) < 3:
+        if bw <= 0 or bh <= 0:
             continue
 
-        avg_width = sum(widths) / len(widths)
-        avg_height = sum(heights) / len(heights)
+        # Too narrow: mirror, pole, cargo, or noise.
+        if bw < motor_w * 0.08:
+            continue
 
-        x_values = [c[0] for c in centers]
-        y_values = [c[1] for c in centers]
+        # Too wide: probably not a single head.
+        if bw > motor_w * 0.7:
+            continue
 
-        # Three heads should be approximately aligned vertically.
-        max_y_diff = max(y_values) - min(y_values)
-        same_horizontal_level = max_y_diff < avg_height * 0.8
+        cx = (bx1 + bx2) / 2
+        cy = (by1 + by2) / 2
 
-        gap_1 = x_values[1] - x_values[0]
-        gap_2 = x_values[2] - x_values[1]
+        margin_x = motor_w * 0.3
+        margin_y = motor_h * 0.4
 
-        # Heads should be close enough to belong to the same motorcycle.
-        close_enough = (
-            gap_1 < avg_width * 3.5
-            and gap_2 < avg_width * 3.5
+        if not (x1m - margin_x <= cx <= x2m + margin_x):
+            continue
+
+        if not (y1m - margin_y <= cy <= y2m + margin_y):
+            continue
+
+        valid_boxes.append((bx1, by1, bx2, by2))
+
+    if len(valid_boxes) < 3:
+        return False
+
+    # Check every group of three valid head boxes.
+    for group in combinations(valid_boxes, 3):
+        centers = [
+            ((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)
+            for b in group
+        ]
+
+        widths = [
+            b[2] - b[0]
+            for b in group
+        ]
+
+        heights = [
+            b[3] - b[1]
+            for b in group
+        ]
+
+        avg_w = sum(widths) / len(widths)
+        avg_h = sum(heights) / len(heights)
+
+        x_vals = [c[0] for c in centers]
+        y_vals = [c[1] for c in centers]
+
+        x_spread = max(x_vals) - min(x_vals)
+        y_spread = max(y_vals) - min(y_vals)
+
+        # Reject duplicate detections almost on top of each other.
+        if x_spread < avg_w * 0.3 and y_spread < avg_h * 0.3:
+            continue
+
+        # Front-to-back layout.
+        front_to_back = (
+            y_spread > avg_h * 0.8
+            and x_spread < avg_w * 3.5
         )
 
-        # Prevent duplicate overlapping detections from being counted as riders.
-        separated = (
-            gap_1 > avg_width * 0.3
-            and gap_2 > avg_width * 0.3
+        # Side-by-side layout.
+        side_by_side = (
+            x_spread > avg_w * 1.5
+            and y_spread < avg_h * 0.9
         )
 
-        if same_horizontal_level and close_enough and separated:
+        # Diagonal layout.
+        diagonal = (
+            x_spread > avg_w * 0.5
+            and y_spread > avg_h * 0.5
+            and x_spread < motor_w * 0.85
+            and y_spread < motor_h * 0.85
+        )
+
+        if front_to_back or side_by_side or diagonal:
             return True
 
     return False
 
-# =========================================================
-# Stabilized Video Pipeline
-# =========================================================
-"""
-    Processes video with tracking and voting.
 
-    Added features:
-    - Tracks each motorcycle using ByteTrack.
-    - Keeps helmet_hits for stable helmet violation decision.
-    - Keeps triple_hits for stable triple riding decision.
-    - Returns triple_riding_detected for frontend popup usage.
-    """
+# =========================================================
+# Main Stabilized Video Pipeline
+# =========================================================
 def run_stabilized_pipeline(video_in, video_out):
     start_time = time.time()
-    
-    # Initialize internal memory for this specific run
+
     track_history = {}
-    
+    all_confidences = []
+
     total_stable_violations = 0
     total_triple_riding = 0
-
-    all_confidences = []
 
     cap = cv2.VideoCapture(video_in)
 
@@ -124,40 +147,36 @@ def run_stabilized_pipeline(video_in, video_out):
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
-    if fps == 0: 
+
+    if fps == 0:
         fps = 25
-    
-    # Make sure output folder exists before creating writer.
+
     Path(video_out).parent.mkdir(parents=True, exist_ok=True)
 
-    # Define codec: 'avc1' is H.264 (Web Standard). 
-    # If the system lacks the driver, it falls back to 'mp4v'.
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    fourcc = cv2.VideoWriter_fourcc(*"avc1")
     writer = cv2.VideoWriter(video_out, fourcc, fps, (w, h))
 
     if not writer.isOpened():
-        print("Codec 'avc1' failed. Falling back to 'mp4v'...")
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         writer = cv2.VideoWriter(video_out, fourcc, fps, (w, h))
 
-    Path(video_out).parent.mkdir(parents=True, exist_ok=True)
-    
-    print(f"Starting processing: {video_in}")
+    print(f"Starting High-Precision Processing: {video_in}")
 
     while cap.isOpened():
         success, frame = cap.read()
-        if not success: break
 
+        if not success:
+            break
 
         # =================================================
-        # Motorcycle Tracking
+        # 1. Track Motorcycles
         # =================================================
         results = MOTOR_MODEL.track(
-            frame, 
-            classes=[3], 
-            conf=0.40, 
-            persist=True, 
-            tracker="bytetrack.yaml", 
+            frame,
+            classes=[3],
+            conf=0.45,
+            persist=True,
+            tracker="bytetrack.yaml",
             iou=0.3,
             verbose=False
         )[0]
@@ -170,13 +189,13 @@ def run_stabilized_pipeline(video_in, video_out):
 
             for box, track_id in zip(boxes, ids):
                 x1, y1, x2, y2 = box
-                
                 mw = x2 - x1
                 mh = y2 - y1
 
-                # Distance Filter: Ignore very small / far bikes
-                if mh < (h * 0.08): continue 
-                
+                # Ignore very small / far motorcycles.
+                if mh < (h * 0.15):
+                    continue
+
                 bikes_in_frame += 1
 
                 # =================================================
@@ -184,25 +203,28 @@ def run_stabilized_pipeline(video_in, video_out):
                 # =================================================
                 if track_id not in track_history:
                     track_history[track_id] = {
-                        "frames_seen": 0, 
-                        "helmet_hits": 0,  # Helmet voting memory
-                        "triple_hits": 0,  # Triple riding voting memory
-                        "is_logged": False,  # Logging flags prevent double counting.
+                        "frames_seen": 0,
+                        "helmet_hits": 0,
+                        "no_helmet_hits": 0,
+                        "triple_hits": 0,
+                        "is_logged": False,
                         "triple_logged": False,
                         "status": "ANALYZING",
-                        "triple_riding": False # Final triple riding decision for this track
+                        "triple_riding": False
                     }
 
                 track_history[track_id]["frames_seen"] += 1
 
                 # =================================================
-                # Head ROI for this tracked motorcycle
+                # 2. Head ROI
                 # =================================================
-                roi_x1 = max(0, x1 - int(mw * 0.25))
-                roi_x2 = min(w, x2 + int(mw * 0.25))
-
                 roi_y1 = max(0, y1 - int(mh * 0.55))
                 roi_y2 = min(h, y1 + int(mh * 0.25))
+
+                pad = int(mw * 0.2) if mw > mh else 0
+
+                roi_x1 = max(0, x1 - pad)
+                roi_x2 = min(w, x2 + pad)
 
                 head_roi = frame[roi_y1:roi_y2, roi_x1:roi_x2]
 
@@ -210,25 +232,26 @@ def run_stabilized_pipeline(video_in, video_out):
                 head_boxes_for_drawing = []
 
                 # =================================================
-                # Helmet / Head Detection inside ROI
+                # 3. Helmet / Head Detection inside ROI
                 # =================================================
                 if head_roi.size > 0:
                     h_results = HELMET_MODEL.predict(
-                        head_roi, conf=0.2, imgsz=960, verbose=False
+                        head_roi,
+                        conf=0.45,
+                        imgsz=960,
+                        verbose=False
                     )[0]
 
                     frame_has_helmet = False
-                    
+                    frame_has_no_helmet = False
+
                     for hb in h_results.boxes:
                         label = HELMET_MODEL.names[int(hb.cls[0])].lower()
-                        
-                        # Capture the confidence of this specific detection
                         conf_val = float(hb.conf[0])
                         all_confidences.append(conf_val)
-                        
+
                         hx1, hy1, hx2, hy2 = map(int, hb.xyxy[0])
 
-                        # Convert ROI-local helmet box to full-frame coordinates.
                         abs_h_box = (
                             roi_x1 + hx1,
                             roi_y1 + hy1,
@@ -242,22 +265,26 @@ def run_stabilized_pipeline(video_in, video_out):
                             frame_has_helmet = True
                             head_boxes_for_drawing.append((abs_h_box, (0, 255, 0)))
                         else:
+                            frame_has_no_helmet = True
                             head_boxes_for_drawing.append((abs_h_box, (0, 0, 255)))
 
-                     # Helmet voting:
-                    # If helmet is seen in this frame, increase helmet_hits.
-                    if frame_has_helmet: 
+                    if frame_has_helmet:
                         track_history[track_id]["helmet_hits"] += 1
-                    
-                    # Triple riding frame-level check:
-                    # If three heads are side by side in this frame, increase triple_hits.
-                    if len(head_boxes_only) >= 3:
+
+                    if frame_has_no_helmet:
+                        track_history[track_id]["no_helmet_hits"] += 1
+
+                    # =================================================
+                    # Triple Riding Check
+                    # =================================================
+                    motor_box = (x1, y1, x2, y2)
+
+                    if are_three_riders_present(head_boxes_only, motor_box):
                         track_history[track_id]["triple_hits"] += 1
 
                 # =================================================
-                # Stable Decision Logic
+                # 4. Stable Decision Logic
                 # =================================================
-                # Wait until the object is seen enough frames.
                 if track_history[track_id]["frames_seen"] > 15:
                     frames_seen = track_history[track_id]["frames_seen"]
 
@@ -265,44 +292,51 @@ def run_stabilized_pipeline(video_in, video_out):
                         track_history[track_id]["helmet_hits"] / frames_seen
                     )
 
-                    triple_ratio = (
-                        track_history[track_id]["triple_hits"] / frames_seen
+                    no_helmet_ratio = (
+                        track_history[track_id]["no_helmet_hits"] / frames_seen
                     )
-                    
-                    # Helmet decision:
-                    # If helmet appears in enough frames, mark as SAFE.
-                    # Otherwise mark as VIOLATION.
-                    if helmet_ratio > 0.3:
+
+                    # If more than 20% of the frames show a helmet, consider it safe.
+                    if helmet_ratio > 0.20:
                         track_history[track_id]["status"] = "SAFE"
-                    else:
+                    
+                    # If more than 15% of the frames show no helmet, consider it a violation.
+                    elif no_helmet_ratio > 0.15:
                         track_history[track_id]["status"] = "VIOLATION"
 
                         if not track_history[track_id]["is_logged"]:
                             total_stable_violations += 1
                             track_history[track_id]["is_logged"] = True
 
-                    # Triple riding decision:
-                    # A lower ratio is used because triple riding may not be visible
-                    # clearly in every frame.
-                    if track_history[track_id]["triple_hits"] >= 2:
+                    # If it's still early or mixed, keep analyzing.
+                    else:
+                        if track_history[track_id]["status"] == "ANALYZING":
+                            track_history[track_id]["status"] = "ANALYZING"
+                    
+                    # Triple riding becomes stable after several positive frames.
+                    if track_history[track_id]["triple_hits"] > 5:
                         track_history[track_id]["triple_riding"] = True
 
                         if not track_history[track_id]["triple_logged"]:
                             total_triple_riding += 1
                             track_history[track_id]["triple_logged"] = True
-                   
+
                 # =================================================
-                # Drawing Status
+                # 5. Drawing
                 # =================================================
                 status = track_history[track_id]["status"]
 
-                # Triple riding has display priority because it is a separate violation.
-                if track_history[track_id]["triple_riding"]:
-                    status = "TRIPLE RIDING"
+                if track_history[track_id]["triple_riding"] and status == "VIOLATION":
+                    display_status = "TRIPLE + NO HELMET"
+                
+                elif track_history[track_id]["triple_riding"]:
+                    display_status = "TRIPLE RIDING"
+                else:
+                    display_status = status
 
-                if status == "SAFE":
+                if display_status == "SAFE":
                     color = (0, 255, 0)
-                elif status == "ANALYZING":
+                elif display_status == "ANALYZING":
                     color = (0, 255, 255)
                 else:
                     color = (0, 0, 255)
@@ -311,15 +345,14 @@ def run_stabilized_pipeline(video_in, video_out):
 
                 cv2.putText(
                     frame,
-                    f"ID:{track_id} {status}",
+                    f"ID:{track_id} {display_status}",
                     (x1, max(20, y1 - 10)),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
+                    0.5,
                     color,
                     2
                 )
 
-                # Draw helmet / no_helmet boxes.
                 for h_box, h_color in head_boxes_for_drawing:
                     cv2.rectangle(
                         frame,
@@ -329,25 +362,26 @@ def run_stabilized_pipeline(video_in, video_out):
                         1
                     )
 
-                # Draw triple riding warning near the motorcycle.
                 if track_history[track_id]["triple_riding"]:
                     cv2.putText(
                         frame,
                         "TRIPLE RIDING DETECTED",
                         (x1, min(h - 10, y2 + 25)),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
+                        0.55,
                         (0, 0, 255),
                         2
                     )
-         # =====================================================
-        # Dashboard UI
-        # =====================================================
+
+        # =================================================
+        # 6. Dashboard UI
+        # =================================================
         cv2.rectangle(frame, (0, 0), (w, 60), (20, 20, 20), -1)
+
         dashboard_text = (
             f"AI SAFETY LAB | "
             f"BIKES: {bikes_in_frame} | "
-            f"HELMET VIOLATIONS: {total_stable_violations} | "
+            f"VIOLATIONS: {total_stable_violations} | "
             f"TRIPLE RIDING: {total_triple_riding}"
         )
 
@@ -363,42 +397,48 @@ def run_stabilized_pipeline(video_in, video_out):
 
         writer.write(frame)
 
-
     cap.release()
     writer.release()
-    
-    end_time = time.time()
-    # Calculate total time in milliseconds (ms)
-    total_duration_ms = int((end_time - start_time)* 1000)
 
-    # Calculate the average as a whole number (e.g., 88)
-    if all_confidences:
-        avg_val = int(np.mean(all_confidences) * 100)
-    else:
-        avg_val = 0 # Fallback to 0 if no detections made
+    # =================================================
+    # Final Metric Calculation
+    # =================================================
+    end_time = time.time()
+    duration = int((end_time - start_time) * 1000)
+
+    avg_conf = int(np.mean(all_confidences) * 100) if all_confidences else 0
 
     stable_tracks = [
-        t for t in track_history.values() 
-        if t["frames_seen"] > 15
+        t for t in track_history.values()
+        if t["frames_seen"] > 30
     ]
 
     stable_helmets = [
-        t for t in stable_tracks 
+        t for t in stable_tracks
         if t["status"] == "SAFE"
+    ]
+
+    stable_triple_riding = [
+        t for t in stable_tracks
+        if t["triple_riding"]
     ]
 
     return {
         "motorcycles": len(stable_tracks),
         "helmets": len(stable_helmets),
         "violations": total_stable_violations,
-        "triple_riding": total_triple_riding,
-        "triple_riding_detected": total_triple_riding > 0,
+
+        "triple_riding": len(stable_triple_riding),
+        "triple_riding_detected": len(stable_triple_riding) > 0,
+        "checks": len(stable_triple_riding),
+
         "popup_message": (
             "Triple riding detected!"
-            if total_triple_riding > 0
+            if len(stable_triple_riding) > 0
             else ""
         ),
+
         "resolution": f"{w}x{h}",
-        "processing_time": total_duration_ms,
-        "avg_confidence": avg_val 
+        "processing_time": duration,
+        "avg_confidence": avg_conf
     }

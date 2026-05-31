@@ -83,8 +83,8 @@
       </a>
 
       <a class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-900 rounded-lg transition-colors" href="/review-candidates">
-          <i class="fa-solid fa-clipboard-check w-5"></i>
-          Review Candidates
+        <i class="fa-solid fa-clipboard-check w-5"></i>
+        Review Candidates
       </a>
     </nav>
 
@@ -101,8 +101,8 @@
         </h2>
 
         <p class="text-gray-600 font-medium max-w-4xl">
-          This page explains the methodology of the YOLO-based motorcycle and helmet detection pipeline.
-          The system uses a two-stage ROI-based approach to improve reliability and reduce false positives in traffic scene analysis.
+          This page explains the methodology of the YOLO-based motorcycle, helmet, and rider analysis pipeline.
+          The system uses a two-stage ROI-based detection approach, video tracking, correction review, and archive-based result management to improve reliability in traffic scene analysis.
         </p>
       </div>
 
@@ -125,7 +125,7 @@
         Processing Pipeline
       </h3>
 
-      <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] gap-3 items-center">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 items-stretch">
 
         <!-- Step 1 -->
         <div class="method-card rounded-xl p-4 min-h-[175px]">
@@ -138,15 +138,8 @@
           </h4>
 
           <p class="text-xs text-gray-600 leading-relaxed">
-            The system receives a single image or a video frame extracted from traffic footage.
+            The system receives a single image or extracts video frames from uploaded traffic footage.
           </p>
-        </div>
-
-        <!-- Arrow -->
-        <div class="flex items-center justify-center">
-          <div class="w-10 h-10 rounded-full bg-white/70 border border-blue-200 text-dashboard-accentBlue flex items-center justify-center shadow-sm">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
         </div>
 
         <!-- Step 2 -->
@@ -160,15 +153,8 @@
           </h4>
 
           <p class="text-xs text-gray-600 leading-relaxed">
-            The first YOLO model detects motorcycle bounding boxes and localizes the candidate vehicle area.
+            The first YOLO model detects motorcycle bounding boxes and localizes candidate vehicle areas.
           </p>
-        </div>
-
-        <!-- Arrow -->
-        <div class="flex items-center justify-center">
-          <div class="w-10 h-10 rounded-full bg-white/70 border border-emerald-200 text-emerald-700 flex items-center justify-center shadow-sm">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
         </div>
 
         <!-- Step 3 -->
@@ -182,37 +168,45 @@
           </h4>
 
           <p class="text-xs text-gray-600 leading-relaxed">
-            The motorcycle box is expanded with padding and cropped as a focused region of interest.
+            Each motorcycle box is expanded with padding and cropped as a focused region of interest.
           </p>
-        </div>
-
-        <!-- Arrow -->
-        <div class="flex items-center justify-center">
-          <div class="w-10 h-10 rounded-full bg-white/70 border border-red-200 text-dashboard-accentRed flex items-center justify-center shadow-sm">
-            <i class="fa-solid fa-arrow-right"></i>
-          </div>
         </div>
 
         <!-- Step 4 -->
         <div class="method-card rounded-xl p-4 min-h-[175px]">
           <div class="h-11 w-11 rounded-xl red-soft border flex items-center justify-center mb-3">
-            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+            <i class="fa-solid fa-helmet-safety text-lg"></i>
           </div>
 
           <h4 class="text-sm font-bold text-gray-900 mb-1">
-            4. Decision
+            4. Helmet Decision
           </h4>
 
           <p class="text-xs text-gray-600 leading-relaxed">
-            If <strong>no_helmet</strong> is detected inside the ROI, the system marks the case as a helmet violation.
+            If <strong><em>no_helmet</em></strong> is detected inside the motorcycle ROI, the system marks a helmet violation.
+          </p>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="method-card rounded-xl p-4 min-h-[175px]">
+          <div class="h-11 w-11 rounded-xl blue-soft border flex items-center justify-center mb-3">
+            <i class="fa-solid fa-users text-lg"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900 mb-1">
+            5. Triple Riding Check
+          </h4>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            Rider-related regions are analyzed to check whether more than two riders appear on the same motorcycle.
           </p>
         </div>
 
       </div>
     </section>
 
-    <!-- Three Feature Cards - moved upward -->
-    <section class="grid grid-cols-3 gap-4 mb-5">
+    <!-- Feature Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
 
       <div class="soft-panel rounded-xl p-4 min-h-[128px]">
         <div class="flex items-center gap-3 mb-2">
@@ -226,7 +220,7 @@
         </div>
 
         <p class="text-xs text-gray-600 leading-relaxed">
-          Helmet detection is applied only on motorcycle-related regions, which keeps the second stage focused on the relevant area.
+          Helmet detection is applied only on motorcycle-related regions, keeping the second stage focused on the relevant area.
         </p>
       </div>
 
@@ -262,10 +256,26 @@
         </p>
       </div>
 
+      <div class="soft-panel rounded-xl p-4 min-h-[128px]">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-9 h-9 rounded-lg blue-soft border flex items-center justify-center">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+
+          <h4 class="text-sm font-bold text-gray-900">
+            Detection Archive
+          </h4>
+        </div>
+
+        <p class="text-xs text-gray-600 leading-relaxed">
+          Each processed image or video is saved with its input, output, summary metrics, and violation result for later review.
+        </p>
+      </div>
+
     </section>
 
     <!-- Main Methodology Grid -->
-    <section class="grid grid-cols-[1.25fr_0.95fr] gap-5 mb-5 items-stretch">
+    <section class="grid grid-cols-1 xl:grid-cols-[1.25fr_0.95fr] gap-5 mb-5 items-stretch">
 
       <!-- Model Structure -->
       <div class="soft-panel rounded-xl p-5 min-h-[345px]">
@@ -289,7 +299,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <!-- Motorcycle Detector -->
           <div class="blue-soft border rounded-xl p-4 min-h-[225px]">
@@ -302,6 +312,7 @@
                 <p class="text-[9px] font-bold uppercase text-blue-700">
                   Stage 1 Model
                 </p>
+
                 <h4 class="text-sm font-bold text-gray-900">
                   Motorcycle Detector
                 </h4>
@@ -336,6 +347,7 @@
                 <p class="text-[9px] font-bold uppercase text-emerald-700">
                   Stage 2 Model
                 </p>
+
                 <h4 class="text-sm font-bold text-gray-900">
                   Helmet Detector
                 </h4>
@@ -343,13 +355,13 @@
             </div>
 
             <p class="text-xs text-gray-600 leading-relaxed mb-3">
-              This model runs only inside the motorcycle ROI and predicts whether the detected rider area contains helmet or no_helmet class.
+              This model runs only inside the motorcycle ROI and predicts whether the detected rider area contains <em>helmet</em> or <em>no_helmet</em> class.
             </p>
 
             <div class="grid grid-cols-2 gap-2">
               <div class="bg-white/70 rounded-lg border border-emerald-100 p-2">
                 <p class="text-[8px] font-bold text-gray-500 uppercase">Classes</p>
-                <p class="text-xs font-bold text-emerald-900">helmet / no_helmet</p>
+                <p class="text-xs font-bold text-emerald-900"><em>helmet</em> / <em>no_helmet</em></p>
               </div>
 
               <div class="bg-white/70 rounded-lg border border-emerald-100 p-2">
@@ -375,7 +387,7 @@
             </h3>
 
             <p class="text-xs text-gray-600 mt-1">
-              The final decision is produced by combining ROI selection and helmet classification output.
+              The final decision is produced by combining ROI selection, helmet classification, and video tracking.
             </p>
           </div>
 
@@ -389,6 +401,7 @@
             <p class="text-xs font-bold text-blue-900">
               1. Motorcycle Found
             </p>
+
             <p class="text-xs text-gray-600 mt-1 leading-relaxed">
               The system first identifies a motorcycle and creates a candidate area for detailed inspection.
             </p>
@@ -398,6 +411,7 @@
             <p class="text-xs font-bold text-emerald-900">
               2. Helmet Model Runs
             </p>
+
             <p class="text-xs text-gray-600 mt-1 leading-relaxed">
               The second model analyzes only the cropped motorcycle region instead of the full image.
             </p>
@@ -405,15 +419,165 @@
 
           <div class="bg-red-50 border border-red-200 text-red-900 rounded-lg p-4 shadow-sm">
             <p class="text-xs font-bold flex items-center gap-2">
-              3. no_helmet Detected
+              3. <em>no_helmet</em> Detected
             </p>
+
             <p class="text-xs text-red-800 mt-2 leading-relaxed">
-              If a no_helmet prediction is detected inside the ROI with sufficient confidence, the case is classified as a helmet violation.
+              If a <em>no_helmet</em> prediction is detected inside the ROI with sufficient confidence, the case is classified as a helmet violation.
+            </p>
+          </div>
+
+          <div class="blue-soft border rounded-lg p-3">
+            <p class="text-xs font-bold text-blue-900">
+              4. Video Tracking
+            </p>
+
+            <p class="text-xs text-gray-600 mt-1 leading-relaxed">
+              For video inputs, motorcycle detections are tracked across frames. This prevents the same motorcycle from being counted repeatedly in every frame.
             </p>
           </div>
         </div>
       </div>
 
+    </section>
+
+    <!-- Video Tracking and Triple Riding Section -->
+    <section class="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
+
+      <!-- Video Tracking -->
+      <div class="soft-panel rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-11 h-11 rounded-lg blue-soft border flex items-center justify-center">
+            <i class="fa-solid fa-video"></i>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Video Processing and Tracking
+            </h3>
+
+            <p class="text-xs text-gray-500">
+              Frame-based analysis with object tracking support
+            </p>
+          </div>
+        </div>
+
+        <p class="text-sm text-gray-600 leading-7 mb-4">
+          For video inputs, the system analyzes frames and tracks detected motorcycles over time. Instead of counting the same motorcycle separately in every frame, the tracking mechanism keeps a history for each detected object.
+        </p>
+
+        <p class="text-sm text-gray-600 leading-7">
+          This approach improves the consistency of the final result by allowing the system to observe a motorcycle across multiple frames before finalizing the helmet violation decision.
+        </p>
+      </div>
+
+      <!-- Triple Riding -->
+      <div class="soft-panel rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-11 h-11 rounded-lg red-soft border flex items-center justify-center">
+            <i class="fa-solid fa-users"></i>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">
+              Triple Riding Detection
+            </h3>
+
+            <p class="text-xs text-gray-500">
+              Additional safety violation analysis
+            </p>
+          </div>
+        </div>
+
+        <p class="text-sm text-gray-600 leading-7 mb-4">
+          In addition to helmet violation detection, the system can also support triple riding analysis. This module checks rider-related regions and determines whether more than two riders are present on the same motorcycle.
+        </p>
+
+        <p class="text-sm text-gray-600 leading-7">
+          Since this decision depends on the quality of rider or head-region detections, crowded scenes, occlusion, and low-resolution frames may still affect the result. Future improvements may include stronger rider detection, pose estimation, or segmentation-based rider counting.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- Review and Correction Workflow -->
+    <section class="soft-panel rounded-xl p-6 mb-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-11 h-11 rounded-lg green-soft border flex items-center justify-center">
+          <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">
+            Review and Correction Workflow
+          </h3>
+
+          <p class="text-xs text-gray-500">
+            Human review support for improving detection reliability
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+        <div class="blue-soft border rounded-xl p-4">
+          <p class="text-sm font-bold text-blue-900 mb-2">
+            1. Candidate Review
+          </p>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            Important or uncertain detection outputs can be inspected in the Review Candidates panel.
+          </p>
+        </div>
+
+        <div class="green-soft border rounded-xl p-4">
+          <p class="text-sm font-bold text-emerald-900 mb-2">
+            2. Manual Correction
+          </p>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            The user can review the output and correct possible <em>helmet</em> or <em>no_helmet</em> classification mistakes.
+          </p>
+        </div>
+
+        <div class="red-soft border rounded-xl p-4">
+          <p class="text-sm font-bold text-red-900 mb-2">
+            3. Future Improvement
+          </p>
+
+          <p class="text-xs text-gray-600 leading-relaxed">
+            Corrected cases can later support active learning, dataset improvement, and model retraining.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Archive and Metrics Workflow -->
+    <section class="soft-panel rounded-xl p-6 mb-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-11 h-11 rounded-lg blue-soft border flex items-center justify-center">
+          <i class="fa-solid fa-database"></i>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">
+            Archive and Result Management
+          </h3>
+
+          <p class="text-xs text-gray-500">
+            Storing detection outputs for later analysis
+          </p>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-600 leading-7 mb-4">
+        After each image or video is processed, the system stores a detection record. This record includes the original input, processed output, file type, detected motorcycle count, helmet-related results, violation status, confidence information, and processing time.
+      </p>
+
+      <p class="text-sm text-gray-600 leading-7">
+        The Archive page allows the user to revisit previous detections, compare results, and keep track of the system output over time. This makes the application more useful for testing, reporting, and future performance evaluation.
+      </p>
     </section>
 
     <!-- Long Methodology Detail Section -->
@@ -434,28 +598,24 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div>
           <p class="text-sm text-gray-600 leading-7 mb-4">
-            A full-frame helmet detector may generate incorrect detections in crowded traffic scenes because it analyzes every visible object in the image.
-            In real road environments, pedestrians, background heads, helmet-like objects, or riders on nearby vehicles can easily confuse the detector.
+            A full-frame helmet detector may generate incorrect detections in crowded traffic scenes because it analyzes every visible object in the image. In real road environments, pedestrians, background heads, helmet-like objects, or riders on nearby vehicles can easily confuse the detector.
           </p>
 
           <p class="text-sm text-gray-600 leading-7">
-            To reduce this problem, the system first detects the motorcycle and then limits the helmet detection process to the motorcycle-related region.
-            This means the second model does not search the entire image. Instead, it focuses only on the area where a rider is expected to appear.
+            To reduce this problem, the system first detects the motorcycle and then limits the helmet detection process to the motorcycle-related region. This means the second model does not search the entire image. Instead, it focuses only on the area where a rider is expected to appear.
           </p>
         </div>
 
         <div>
           <p class="text-sm text-gray-600 leading-7 mb-4">
-            This design makes the violation decision more reliable because the final result depends on both vehicle localization and helmet classification.
-            A no_helmet prediction outside the motorcycle ROI is ignored, which helps reduce false violation alerts.
+            This design makes the violation decision more reliable because the final result depends on both vehicle localization and helmet classification. A <em>no_helmet</em> prediction outside the motorcycle ROI is ignored, which helps reduce false violation alerts.
           </p>
 
           <p class="text-sm text-gray-600 leading-7">
-            The methodology is also efficient. Since the helmet detector runs on smaller cropped regions, the pipeline can process images faster and can later be extended to video-based analysis.
-            Overall, this ROI-based structure improves accuracy, interpretability, and practical usability.
+            The methodology is also efficient. Since the helmet detector runs on smaller cropped regions, the pipeline can process images faster and can later be extended to video-based analysis, tracking, review-based correction, and additional traffic safety violations.
           </p>
         </div>
       </div>

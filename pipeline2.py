@@ -331,7 +331,7 @@ def process_image(image_path, output_path):
         # - no head/helmet is detected in the ROI.    
         is_violation = (
             no_helmet_count > 0 
-            or rider_count > 2 
+            or triple_riding_detected 
             or rider_count == 0
         )
 

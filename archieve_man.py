@@ -53,7 +53,16 @@ def create_archive_record(
         "motorcycles": summary.get("motorcycles", 0),
         "helmets": summary.get("helmets", 0),
         "violations": summary.get("violations", 0),
-        "checks": summary.get("checks", 0),
+        "triple_riding": summary.get("triple_riding", 0),
+        "triple_riding_detected": summary.get("triple_riding_detected", False),
+
+        "checks": summary.get("checks", summary.get("triple_riding", 0)),
+        "needs_check": summary.get("triple_riding_detected", False),
+        "check_reason": (
+            "Triple Riding"
+            if summary.get("triple_riding_detected", False)
+            else ""
+        ),
 
         "avg_confidence": summary.get("avg_confidence", 0),
         "processing_time": summary.get("processing_time", 0),
