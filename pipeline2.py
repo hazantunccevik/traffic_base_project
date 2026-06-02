@@ -1,83 +1,21 @@
 import time
-import datetime 
-
-import cv2
-import numpy as np
-from ultralytics import YOLO
+import cv2 # OpenCV for image processing
+import numpy as np # For numerical operations
+from ultralytics import YOLO # For object detection
 from pathlib import Path
 
 # =========================================================
 # Load Models
 # =========================================================
-MOTOR_MODEL = YOLO("yolo11m.pt") # High-quality base
+MOTOR_MODEL = YOLO("yolo11m.pt") 
 HELMET_MODEL = YOLO(r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt")
 
 # =========================================================
-# Refined Geometry & Logic
-# =========================================================
-
-"""
-Helper function to calculate IoU between two boxes 
-Area of Overlap / Area of Union
-Box format: [x1, y1, x2, y2]
-"""
-def get_iou(boxA, boxB):
-    xA = max(boxA[0], boxB[0])
-    yA = max(boxA[1], boxB[1])
-    xB = min(boxA[2], boxB[2])
-    yB = min(boxA[3], boxB[3])
-    
-    interArea = max(0, xB - xA) * max(0, yB - yA)
-    
-    boxAArea = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1])
-    boxBArea = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
-    
-    return interArea / float(boxAArea + boxBArea - interArea + 1e-6)
-
-
-"""
-    Creates head-focused ROI from a rider box.
-    Includes widen horizontally to catch leaning riders.
- """
-def make_rider_head_roi(rider_box, img_w, img_h):
-    rx1, ry1, rx2, ry2 = rider_box
-    rw = rx2 - rx1
-    rh = ry2 - ry1
-
-    # Look 20% higher than the person box start point
-    roi_y1 = max(0, ry1 - int(rh * 0.15)) 
-    
-    # Only need the top 40% of the person's body
-    roi_y2 = min(img_h, ry1 + int(rh * 0.35))
-    
-    # Widen horizontally to catch leaning riders
-    roi_x1 = max(0, rx1 - int(rw * 0.1))
-    roi_x2 = min(img_w, rx2 + int(rw * 0.1))
-    
-    return [roi_x1, roi_y1, roi_x2, roi_y2]
-
-
-# =========================================================
 # Triple Riding Geometry Check
+# Checks whether at least three detected head/helmet boxes are side by side.
 # =========================================================
 def are_three_heads_side_by_side(head_boxes):
-    """
-    Checks whether at least three detected head/helmet boxes are side by side.
-
-    This function does NOT only count detections.
-    It checks whether three boxes are:
-    - horizontally ordered,
-    - close enough to each other,
-    - roughly on the same vertical level.
-
-    head_boxes format:
-    [
-        (x1, y1, x2, y2),
-        (x1, y1, x2, y2),
-        ...
-    ]
-    """
-
+  
     if len(head_boxes) < 3:
         return False
 
@@ -95,6 +33,7 @@ def are_three_heads_side_by_side(head_boxes):
         for box in group:
             x1, y1, x2, y2 = box
 
+            # Calculate center, width, and height of each box.
             box_w = x2 - x1
             box_h = y2 - y1
 
@@ -111,6 +50,7 @@ def are_three_heads_side_by_side(head_boxes):
         if len(centers) < 3:
             continue
 
+        # Calculate average width and height of the three boxes.
         avg_width = sum(widths) / len(widths)
         avg_height = sum(heights) / len(heights)
 
@@ -145,123 +85,65 @@ def are_three_heads_side_by_side(head_boxes):
     return False
 
 # =========================================================
-# Helmet Detection Helper
-# =========================================================
-def detect_helmet_refined(img, roi_box):
-    """
-    Enhanced detection with Cap-Filtering logic.
-    Runs helmet detection inside a given ROI.
-
-    This function is kept from your previous code.
-    It returns:
-    - decision: "helmet", "no_helmet", or "unknown"
-    - absolute bounding box
-    - confidence
-    """
-    x1, y1, x2, y2 = map(int, roi_box)
-    roi = img[y1:y2, x1:x2]
-    if roi.size == 0: return "unknown", None, 0.0
-
-    # Increase imgsz to 960 for helmet check to distinguish textures (caps vs helmets)
-    results = HELMET_MODEL.predict(
-        source=roi, conf=0.35, imgsz=960, verbose=False
-    )[0]
-
-    best_conf = 0
-    decision = "unknown"
-    box_abs = None
-
-    for box in results.boxes:
-        label = HELMET_MODEL.names[int(box.cls[0])].lower()
-        conf = float(box.conf[0])
-        
-        hx1, hy1, hx2, hy2 = map(int, box.xyxy[0])
-        
-        # FEATURE FILTER: Helmets are usually wider and boxier than caps
-        # Caps are very flat. We check aspect ratio.
-        hw = hx2 - hx1
-        hh = hy2 - hy1
-        
-        aspect_ratio = hw / float(hh + 1e-6)
-        is_helmet = "helmet" in label and "no" not in label
-        
-        # If it's a helmet but too 'flat' or small, it's likely a cap or noise
-        # Filter very flat or very small helmet detections.
-        # This helps reduce false positives such as caps or noise.
-        if is_helmet:
-            if aspect_ratio > 1.8 or hh < (roi.shape[0] * 0.2):
-                continue # Skip suspicious small/flat detections
-            
-            if conf > best_conf:
-                best_conf = conf
-                decision = "helmet"
-                box_abs = (x1+hx1, y1+hy1, x1+hx2, y1+hy2)
-        
-        elif "no" in label:
-            if conf > best_conf:
-                best_conf = conf
-                decision = "no_helmet"
-                box_abs = (x1+hx1, y1+hy1, x1+hx2, y1+hy2)
-
-    return decision, box_abs, best_conf
-
-# =========================================================
 # Main Processing Logic
+# This function processes a single image
+# Detects motorcycles and helmets, checks for violations, and draws results.
 # =========================================================
-"""
-    Processes a single image.
-
-    Added features:
-    - Detects helmet/no_helmet inside motorcycle head ROI.
-    - Collects all detected head boxes.
-    - Checks whether three head boxes are side by side.
-    - Returns triple_riding_detected for frontend popup usage.
-    """
 def process_image(image_path, output_path):
+
     start_time = time.time() 
 
-    img = cv2.imread(str(image_path))
+    img = cv2.imread(str(image_path)) # Load image using OpenCV
     if img is None:
         return None
 
-    h, w = img.shape[:2]
-    ui_scale = max(0.5, w / 1280)
-    
-    all_confidences = []
+    # Get image dimensions (height, width)
+    h, w = img.shape[:2] 
 
-    # Indent this exactly 4 spaces from the 'def'
-    # Detect motorcycles.
+    # Scale UI elements based on image width
+    ui_scale = max(0.5, w / 1280) 
+    
+    # Collect confidence scores for both motorcycle and helmet 
+    all_confidences = [] 
+
+    # Detect motorcycles
     results = MOTOR_MODEL.predict(
-        img, classes=[3], conf=0.25, iou=0.5, verbose=False
+        img, 
+        classes=[3], # COCO class motorcycle
+        conf=0.25, # Priority is to catch all motorcycles
+        iou=0.5, # High overlap = ignore duplicates 
+        verbose=False
     )[0]
 
     bike_count = 0
     total_violations = 0
     triple_riding_count = 0
 
+    # Process each detected motorcycle box
     for box in results.boxes:
         motor_conf = float(box.conf[0])
         all_confidences.append(motor_conf)
         
+        #Motorcycle width and height for ROI calculation.
         x1, y1, x2, y2 = map(int, box.xyxy[0])
-        mw, mh = x2 - x1, y2 - y1
-        
+        mw = x2 - x1
+        mh = y2 - y1
+
         bike_count += 1
         
-        # Determine ROI
         # =================================================
-        # Motorcycle-based Head ROI
+        # Motorcycle-based Head ROI Calculation
         # =================================================
-        # Side-view motorcycles need wider ROI.
+  
         is_side_view = mw > mh * 0.8 
-        if is_side_view:
+        if is_side_view: # Expand horizontally 
             roi_x1 = max(0, x1 - int(mw*0.1)) 
             roi_x2 = min(w, x2 + int(mw*0.1))
         else:
             roi_x1 = max(0, x1 + int(mw * 0.1))
             roi_x2 = min(w, x2 - int(mw * 0.1))
 
-
+        # Vertical expansion = above the motorcycle box
         roi_y1 = max(0, y1 - int(mh * 0.45))
         roi_y2 = min(h, y1 + int(mh * 0.3))
 
@@ -271,29 +153,36 @@ def process_image(image_path, output_path):
         helmet_count = 0
         no_helmet_count = 0
 
-        # Stores boxes with colors for drawing.
+        # Helmet/no_helmet boxes + Color 
         head_boxes_for_drawing = []
 
-        # Stores only box coordinates for triple riding geometry check.
+        # Box coordinates for triple riding geometry check.
         head_boxes_only = []
 
         # =================================================
         # Helmet / Head Detection inside ROI
         # =================================================
         if head_roi.size > 0:
+            
             h_results = HELMET_MODEL.predict(
-                head_roi, conf=0.35, imgsz=960, verbose=False
+                head_roi, 
+                conf=0.35, # Helmet's models best F1 conf = 0.34
+                imgsz=960, # To detail small helmet/no-helmet boxes
+                verbose=False
             )[0]
             
+            # For each detected head/helmet box, determine status
             for hb in h_results.boxes:
+                
                 h_conf = float(hb.conf[0])
                 all_confidences.append(h_conf)
 
+                # Detected class label (helmet or no_helmet)
                 label = HELMET_MODEL.names[int(hb.cls[0])].lower()
                 
                 hx1, hy1, hx2, hy2 = map(int, hb.xyxy[0])
                 
-                 # Convert ROI-local helmet box to full-image coordinates.
+                # Convert ROI-local helmet box to full-image coordinates.
                 abs_h_box = (
                     roi_x1 + hx1, 
                     roi_y1 + hy1, 
@@ -302,11 +191,11 @@ def process_image(image_path, output_path):
                 )
                 
                 rider_count += 1
-                head_boxes_only.append(abs_h_box)
+                head_boxes_only.append(abs_h_box) # Triple riding check 
 
                 if "helmet" in label and "no" not in label and h_conf > 0.50:
                     helmet_count += 1
-                    head_boxes_for_drawing.append((abs_h_box, (0, 255, 0)))
+                    head_boxes_for_drawing.append((abs_h_box, (0, 255, 0))) # B G R
                 else:
                     no_helmet_count += 1
                     head_boxes_for_drawing.append((abs_h_box, (0, 0, 255)))
@@ -315,8 +204,6 @@ def process_image(image_path, output_path):
         # =================================================
         # Triple Riding Check
         # =================================================
-        # This replaces the weak rule: rider_count > 2.
-        # Now the system checks whether three detected heads are side by side.
         triple_riding_detected = are_three_heads_side_by_side(head_boxes_only)
 
         if triple_riding_detected:
@@ -325,10 +212,7 @@ def process_image(image_path, output_path):
         # =================================================
         # Final Violation Decision
         # =================================================
-        # A motorcycle is considered violation if:
-        # - at least one no_helmet detection exists,
-        # - triple riding is detected,
-        # - no head/helmet is detected in the ROI.    
+        
         is_violation = (
             no_helmet_count > 0 
             or triple_riding_detected 
@@ -341,8 +225,10 @@ def process_image(image_path, output_path):
         # =================================================
         # Drawing
         # =================================================
+        
         color = (0, 0, 255) if is_violation else (0, 255, 0)
         
+        # Draw motorcycle box
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
 
         if triple_riding_detected:
@@ -350,6 +236,7 @@ def process_image(image_path, output_path):
         else:
             status_text = f"RIDERS:{rider_count}"
 
+        # Drawing status text above the motorcycle box
         cv2.putText(
             img,
             status_text,
@@ -385,6 +272,8 @@ def process_image(image_path, output_path):
     # =====================================================
     # Top Dashboard Bar
     # =====================================================
+    
+    # Black dasboard for summary 
     cv2.rectangle(img, (0, 0), (w, int(60 * ui_scale)), (20, 20, 20), -1)
 
     dashboard_text = (
@@ -402,10 +291,15 @@ def process_image(image_path, output_path):
         (255, 255, 255),
         1
     )
+
+    # Save the annotated image to the output path
     cv2.imwrite(str(output_path), img)
 
+    # Calculate avg. confidence 
     avg_conf_val = int(np.mean(all_confidences) * 100) if all_confidences else 0
 
+
+    # Stop timer & calculate processing time in ms
     end_time = time.time()
     total_duration_ms = int((end_time - start_time) * 1000)
 
@@ -413,13 +307,15 @@ def process_image(image_path, output_path):
         "motorcycles": bike_count,
         "violations": total_violations,
         "helmets": bike_count - total_violations, 
-         "triple_riding": triple_riding_count,
+        
+        "triple_riding": triple_riding_count,
         "triple_riding_detected": triple_riding_count > 0,
         "popup_message": (
             "Triple riding detected!"
             if triple_riding_count > 0
             else ""
         ),
+
         "avg_confidence": avg_conf_val,
         "resolution": f"{w}x{h}",
         "processing_time": total_duration_ms

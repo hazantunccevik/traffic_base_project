@@ -277,6 +277,44 @@ function setOutputStatusError() {
     '<span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span> Error';
 }
 
+/*
+Resets the Detection Output preview area.
+
+This is used when the user selects a new input file.
+It clears the previous output image/video and shows the default placeholder again.
+*/
+function resetOutputPreview() {
+  const {
+    outputPlaceholder,
+    detectionOutputImage,
+    detectionOutputVideo
+  } = window.elements;
+
+  /*
+  Hide and clear previous output image.
+  */
+  if (detectionOutputImage) {
+    detectionOutputImage.classList.add("hidden");
+    detectionOutputImage.removeAttribute("src");
+  }
+
+  /*
+  Hide and clear previous output video.
+  */
+  if (detectionOutputVideo) {
+    detectionOutputVideo.pause();
+    detectionOutputVideo.classList.add("hidden");
+    detectionOutputVideo.removeAttribute("src");
+    detectionOutputVideo.innerHTML = "";
+  }
+
+  /*
+  Show default output placeholder again.
+  */
+  if (outputPlaceholder) {
+    outputPlaceholder.classList.remove("hidden");
+  }
+}
 
 /*
 =====================================================
@@ -288,76 +326,71 @@ File Preview Functions
 Shows selected image or video in Original Input area.
 */
 function setInputPreview(file) {
-  if (!file) return;
-
   const {
+    originalPlaceholder,
     originalInputImage,
     originalInputVideo,
-    detectionOutputImage,
-    detectionOutputVideo,
-    originalPlaceholder,
-    outputPlaceholder,
-    inputStatus,
-    fileTypeText
+    inputStatus
   } = window.elements;
 
+  if (!file) return;
+
+  resetOutputPreview();
+  resetDetectionValues();
+
+  const isImage = file.type.startsWith("image/");
+  const isVideo = file.type.startsWith("video/");
   const fileUrl = URL.createObjectURL(file);
 
-  if (originalPlaceholder) {
-    originalPlaceholder.classList.add("hidden");
-  }
-
-  if (outputPlaceholder) {
-    outputPlaceholder.classList.remove("hidden");
-  }
-
+  /*
+  First, clear previous preview media.
+  This prevents image and video from appearing at the same time.
+  */
   if (originalInputImage) {
     originalInputImage.classList.add("hidden");
     originalInputImage.removeAttribute("src");
   }
 
   if (originalInputVideo) {
+    originalInputVideo.pause();
     originalInputVideo.classList.add("hidden");
     originalInputVideo.removeAttribute("src");
+    originalInputVideo.innerHTML = "";
   }
 
-  if (detectionOutputImage) {
-    detectionOutputImage.classList.add("hidden");
-    detectionOutputImage.removeAttribute("src");
+  /*
+  Show only image preview if selected file is an image.
+  */
+  if (isImage && originalInputImage) {
+    originalInputImage.src = fileUrl;
+    originalInputImage.classList.remove("hidden");
   }
 
-  if (detectionOutputVideo) {
-    detectionOutputVideo.classList.add("hidden");
-    detectionOutputVideo.removeAttribute("src");
+  /*
+  Show only video preview if selected file is a video.
+  */
+  if (isVideo && originalInputVideo) {
+    originalInputVideo.src = fileUrl;
+    originalInputVideo.classList.remove("hidden");
+    originalInputVideo.load();
   }
 
-  if (file.type.startsWith("image/")) {
-    if (originalInputImage) {
-      originalInputImage.src = fileUrl;
-      originalInputImage.classList.remove("hidden");
-    }
-
-    if (fileTypeText) fileTypeText.innerText = "IMAGE";
-
+  /*
+  Hide placeholder after a valid file is selected.
+  */
+  if (originalPlaceholder) {
+    originalPlaceholder.classList.add("hidden");
   }
 
-  if (file.type.startsWith("video/")) {
-    if (originalInputVideo) {
-      originalInputVideo.src = fileUrl;
-      originalInputVideo.classList.remove("hidden");
-    }
-
-    if (fileTypeText) fileTypeText.innerText = "VIDEO";
-  }
-
+  /*
+  Update input status label.
+  */
   if (inputStatus) {
     inputStatus.className =
-      "bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-md";
+      "bg-blue-100 text-blue-800 text-[10px] font-bold px-3 py-1 rounded-md";
 
-    inputStatus.innerText = "Ready";
+    inputStatus.innerText = "Input Loaded";
   }
-
-  resetDetectionValues();
 }
 
 

@@ -175,7 +175,7 @@
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-1 min-h-screen px-8 py-5">
+  <main class="flex-1 min-w-0 min-h-screen px-8 py-5 overflow-hidden">
 
     <!-- Header -->
     <div class="flex justify-between items-start mb-4">
@@ -217,7 +217,7 @@
       </div>
 
       <div id="recentUploadsWrapper">
-        <div id="recentUploads" class="flex gap-4 overflow-x-auto hide-scrollbar pb-1">
+        <div id="recentUploads" class="flex gap-4 overflow-x-auto pb-1">
 
           <div
             id="newUploadCard"
@@ -237,10 +237,10 @@
     </section>
 
     <!-- Original Input and Detection Output -->
-    <section class="grid grid-cols-[1fr_auto_1fr] items-center gap-5 mb-4">
+    <section class="result-section grid grid-cols-[minmax(0,1fr)_70px_minmax(0,1fr)] items-center gap-5 mb-4 w-full max-w-full overflow-hidden">
 
       <!-- Original Input -->
-      <div class="space-y-3">
+      <div class="space-y-3 min-w-0">
         <div class="flex items-center justify-between px-2">
           <h4 class="text-lg font-bold text-blue-900">Original Input</h4>
 
@@ -249,7 +249,7 @@
           </span>
         </div>
 
-        <div class="h-[270px] bg-blue-50 rounded-3xl overflow-hidden border-4 border-blue-100 shadow-xl flex items-center justify-center relative">
+        <div class="preview-box h-[270px] bg-blue-50 rounded-3xl overflow-hidden border-4 border-blue-100 shadow-xl flex items-center justify-center relative">
            <div class="w-full h-full flex items-center justify-center bg-blue-50">
             <img 
               id="originalInputImage" 
@@ -283,7 +283,7 @@
       </div>
 
       <!-- Detection Output -->
-      <div class="space-y-3">
+      <div class="space-y-3 min-w-0">
         <div class="flex items-center justify-between px-2">
           <h4 class="text-lg font-bold text-red-800">Detection Output</h4>
 
@@ -293,7 +293,7 @@
           </span>
         </div>
 
-        <div class="h-[270px] bg-red-50 rounded-3xl overflow-hidden border-4 border-red-100 shadow-xl flex items-center justify-center relative">
+        <div class="preview-box h-[270px] bg-red-50 rounded-3xl overflow-hidden border-4 border-red-100 shadow-xl flex items-center justify-center relative">
           <div class="w-full h-full flex items-center justify-center bg-red-50">
             <img 
               id="detectionOutputImage" 

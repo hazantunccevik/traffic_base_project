@@ -43,7 +43,7 @@ async function loadRecentUploadsFromArchive() {
     recentUploads.innerHTML = "";
     recentUploads.appendChild(newUploadCard);
 
-    const uploads = data.uploads || [];
+    const uploads = (data.uploads || []).slice(0, 5);
 
     uploads.forEach((upload) => {
       const card = createRecentUploadCard(upload);
