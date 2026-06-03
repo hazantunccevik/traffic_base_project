@@ -1,10 +1,6 @@
 /*
-=====================================================
-archive.js
-=====================================================
-
 Handles Archive page interactions:
-- Image preview modal
+- Image / videopreview modal
 - Clear archive button
 - Archive filtering
 - Detail toggle
@@ -20,8 +16,12 @@ Image Preview Modal
 
 const imageModal = document.getElementById("imageModal");
 const modalImage = document.getElementById("modalImage");
-const clearArchiveBtn = document.getElementById("clearArchiveBtn");
 
+/*
+=====================================================
+Open Image Modal
+=====================================================
+*/
 function openImageModal(imageUrl) {
   if (!imageModal || !modalImage) return;
 
@@ -30,6 +30,11 @@ function openImageModal(imageUrl) {
   imageModal.classList.add("flex");
 }
 
+/*
+=====================================================
+Close Image Modal
+=====================================================
+*/
 function closeImageModal() {
   if (!imageModal || !modalImage) return;
 
@@ -41,6 +46,7 @@ function closeImageModal() {
 window.openImageModal = openImageModal;
 window.closeImageModal = closeImageModal;
 
+// Closes the image modal when the user clicks outside the image area
 if (imageModal) {
   imageModal.addEventListener("click", function (event) {
     if (event.target === imageModal) {
@@ -51,9 +57,49 @@ if (imageModal) {
 
 /*
 =====================================================
-Clear Archive
+Open Video Preview Modal
 =====================================================
 */
+function openVideoModal(videoUrl) {
+  const modal = document.getElementById("videoModal");
+  const video = document.getElementById("modalVideo");
+
+  if (!modal || !video) return;
+
+  video.src = videoUrl;
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  video.play();
+}
+
+/*
+=====================================================
+Close Video Preview Modal -pauses the video, and resets it
+=====================================================
+*/
+function closeVideoModal() {
+  const modal = document.getElementById("videoModal");
+  const video = document.getElementById("modalVideo");
+
+  if (!modal || !video) return;
+
+  video.pause();
+  video.currentTime = 0;
+  video.src = "";
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+window.openVideoModal = openVideoModal;
+window.closeVideoModal = closeVideoModal;
+
+
+/*
+=====================================================
+Clear Archive - archive_data.json communication 
+=====================================================
+*/
+const clearArchiveBtn = document.getElementById("clearArchiveBtn");
 
 if (clearArchiveBtn) {
   clearArchiveBtn.addEventListener("click", async function () {
@@ -102,6 +148,11 @@ function resetArchiveFilterButtons() {
   });
 }
 
+/*
+=====================================================
+Filter Buttons
+=====================================================
+*/
 function setActiveArchiveFilterButton(activeButton) {
   resetArchiveFilterButtons();
 
@@ -128,6 +179,7 @@ function setActiveArchiveFilterButton(activeButton) {
   }
 }
 
+// Add click event listeners to filter buttons
 archiveFilterButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const selectedFilter = button.dataset.filter;
@@ -152,15 +204,12 @@ archiveFilterButtons.forEach((button) => {
   });
 });
 
+
 /*
 =====================================================
-Archive Detail Toggle
+Archive Detail Toggle - View Details / Hide Details
 =====================================================
-
-Shows or hides the detailed input/output/metrics area
-inside each archive record card.
 */
-
 const archiveToggleButtons = document.querySelectorAll(".archive-toggle-btn");
 
 archiveToggleButtons.forEach((button) => {
@@ -186,16 +235,11 @@ archiveToggleButtons.forEach((button) => {
 /*
 =====================================================
 Archive Feedback and Correction Panel
+Correct / Needs Review / Wrong Detection / Correction Panel visibility / Saving corrected values
 =====================================================
-
-Handles:
-- Correct
-- Needs Review
-- Wrong Detection
-- Correction Panel visibility
-- Saving corrected values
 */
 
+// Set the active state of feedback buttons and show correction panel if needed
 function setFeedbackButtonActive(clickedButton) {
   const feedbackPanel = clickedButton.closest(".feedback-panel");
   if (!feedbackPanel) return;
@@ -229,6 +273,12 @@ function setFeedbackButtonActive(clickedButton) {
   }
 }
 
+
+/*
+=====================================================
+Show / Hide Correlation Panel on Feedback type 
+=====================================================
+*/
 function showOrHideCorrectionPanel(feedbackPanel, feedbackType) {
   const correctionPanel = feedbackPanel.querySelector(".correction-panel");
 
@@ -244,6 +294,12 @@ function showOrHideCorrectionPanel(feedbackPanel, feedbackType) {
   }
 }
 
+
+/*
+=====================================================
+Feedback with Correct Values 
+=====================================================
+*/
 function getCorrectionValues(feedbackPanel) {
   const motorcyclesInput = feedbackPanel.querySelector(".corrected-motorcycles");
   const helmetsInput = feedbackPanel.querySelector(".corrected-helmets");
@@ -258,11 +314,18 @@ function getCorrectionValues(feedbackPanel) {
   };
 }
 
+
+/*
+=====================================================
+Send Feedback to backend
+=====================================================
+*/
 async function sendArchiveFeedback(feedbackPanel, feedbackType, includeCorrections) {
   const archiveId = feedbackPanel.dataset.archiveId;
   const filename = feedbackPanel.dataset.filename;
   const feedbackStatus = feedbackPanel.querySelector(".feedback-status");
 
+  // Feedback type and ID - JSON Format
   let payload = {
     archive_id: archiveId,
     filename: filename,
@@ -313,6 +376,12 @@ async function sendArchiveFeedback(feedbackPanel, feedbackType, includeCorrectio
   }
 }
 
+
+/*
+=====================================================
+Event Listener - Feedback buttons 
+=====================================================
+*/
 document.querySelectorAll(".feedback-btn").forEach((button) => {
   button.addEventListener("click", async () => {
     const feedbackPanel = button.closest(".feedback-panel");
@@ -329,6 +398,11 @@ document.querySelectorAll(".feedback-btn").forEach((button) => {
   });
 });
 
+/*
+=====================================================
+Event Listener - Save Correction button
+=====================================================
+*/
 document.querySelectorAll(".save-correction-btn").forEach((button) => {
   button.addEventListener("click", async () => {
     const feedbackPanel = button.closest(".feedback-panel");
@@ -355,13 +429,8 @@ document.querySelectorAll(".save-correction-btn").forEach((button) => {
 /*
 =====================================================
 Open Archive Record From URL Hash
+scrolls to the record, opens its details, highlights it temporarily
 =====================================================
-
-If the page is opened with a URL such as:
-/archive#record-abc123
-
-This function scrolls to the record, opens its details,
-and highlights it temporarily.
 */
 
 function openRecordFromUrlHash() {
@@ -403,34 +472,5 @@ function openRecordFromUrlHash() {
     );
   }, 2500);
 }
-
-
-function openVideoModal(videoUrl) {
-  const modal = document.getElementById("videoModal");
-  const video = document.getElementById("modalVideo");
-
-  if (!modal || !video) return;
-
-  video.src = videoUrl;
-  modal.classList.remove("hidden");
-  modal.classList.add("flex");
-  video.play();
-}
-
-function closeVideoModal() {
-  const modal = document.getElementById("videoModal");
-  const video = document.getElementById("modalVideo");
-
-  if (!modal || !video) return;
-
-  video.pause();
-  video.currentTime = 0;
-  video.src = "";
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
-}
-
-window.openVideoModal = openVideoModal;
-window.closeVideoModal = closeVideoModal;
 
 openRecordFromUrlHash();

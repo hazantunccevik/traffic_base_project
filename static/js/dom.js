@@ -1,13 +1,10 @@
 /*
-This file stores all HTML element references used by
-the dashboard JavaScript files.
-
-Purpose:
-- Keep document.getElementById calls in one place.
-- Make other JS files cleaner and easier to read.
-- If an HTML id changes, it can be updated here only.
-*/
-
+  =====================================================
+  dom.js 
+  Keep document.getElementById calls in one place
+  HTML id changes, it can be updated here only
+  =====================================================
+  */
 window.elements = {
   // Upload Buttons
   uploadImageBtn: document.getElementById("uploadImageBtn"),

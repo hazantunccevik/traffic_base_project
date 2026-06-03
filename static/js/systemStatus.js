@@ -1,14 +1,13 @@
 /*
 =====================================================
 systemStatus.js
-=====================================================
-
-This file checks whether the backend system is reachable.
+ backend system is reachable.
 
 It updates the sidebar system status badge:
 - Checking
 - Ready
 - Error
+=====================================================
 */
 
 async function checkSystemStatus() {

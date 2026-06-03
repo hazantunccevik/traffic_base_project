@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Character encoding and responsive layout settings -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Browser tab title -->
   <title>Archive - Traffic Helmet Violation Detection</title>
 
   <script>
@@ -25,16 +27,27 @@
     };
   </script>
 
+  
+  <!-- Tailwind CSS library for utility-based styling -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
+   <!-- Font icons used in sidebar, buttons, and cards -->
   <link
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     rel="stylesheet"
   />
 
+  <!-- My custom project stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
+
+<!-- 
+  Main page layout:
+  The body is divided into two main parts:
+  1. Sidebar navigation
+  2. Main archive content
+-->
 <body class="min-h-screen overflow-hidden flex">
 
   <!-- Sidebar -->
@@ -84,7 +97,7 @@
       </a>
     </nav>
 
-    <!-- Archive Info -->
+    <!-- Archive Summary -->
     <div class="bg-white/60 border border-gray-300/60 rounded-xl p-4 shadow-sm">
       <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
         Archive Summary
@@ -111,7 +124,7 @@
       </div>
     </div>
 
-    <!-- Help Box -->
+    <!-- Archive Explanation -->
     <div class="bg-white/60 border border-gray-300/60 rounded-xl p-4 shadow-sm">
       <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
         Archive Purpose
@@ -124,7 +137,10 @@
     </div>
   </aside>
 
-  <!-- Main Content -->
+  <!-- Main Content 
+  archive page header, filter buttons, statistics cards,
+  archive records, detail panels, and preview modals 
+  -->
   <main class="flex-1 h-screen px-8 py-6 overflow-y-auto pb-24">
 
     <!-- Header -->
@@ -135,10 +151,10 @@
         </h2>
 
         <p class="text-gray-600 font-medium mt-1">
-          Review previously processed helmet violation detection results.
+          Review previously processed helmet violation detection and triple riding detection results.
         </p>
 
-        <!-- Archive Filters -->
+        <!-- Archive Filters: archive-filter-btn used by archive.js -->
         <div class="flex flex-wrap items-center gap-2 mt-4">
           <button
             type="button"
@@ -173,13 +189,15 @@
           </button>
         </div>
       </div>
-
+      
+      <!-- New Detection Button = index.html -->
       <div class="flex items-center gap-3">
         <a href="/" class="bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-sm">
           <i class="fa-solid fa-plus"></i>
           New Detection
         </a>
 
+        <!-- Clear Archive Button  = clearArchiveBtn -->
         <button id="clearArchiveBtn" class="bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 px-5 py-3 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-sm">
           <i class="fa-solid fa-trash"></i>
           Clear Archive
@@ -187,7 +205,7 @@
       </div>
     </section>
 
-    <!-- Top Stats -->
+    <!-- All Records Stats: total, checks, violations etc. Jinja calc -->
     <section class="grid grid-cols-5 gap-4 mb-6">
 
       <div class="bg-white/70 border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -202,7 +220,7 @@
         </div>
 
         <p class="text-3xl font-bold text-blue-900">
-          {{ records|length }}
+          {{ records|length }} <! -- Total number of records in the archive Jinja template -- >
         </p>
       </div>
 
@@ -272,7 +290,7 @@
 
     </section>
 
-    <!-- Archive Records -->
+    <!-- Empty Archive Records  State -->
     {% if records|length == 0 %}
 
       <section class="bg-white/70 border border-gray-200 rounded-3xl p-12 text-center shadow-sm">
@@ -288,14 +306,20 @@
           Run a detection from the dashboard and the result will appear here.
         </p>
 
+        <!-- Start Detection Button = index.html -->
         <a href="/" class="inline-flex items-center gap-2 bg-dashboard-accentBlue hover:bg-blue-900 text-white px-6 py-3 rounded-xl font-semibold">
           <i class="fa-solid fa-play"></i>
           Start Detection
         </a>
       </section>
 
+    <!-- 
+      Archive Records List: displayed as a card.
+    -->
     {% else %}
-
+      <!-- 
+        show previous feedback status on each archive record 
+      -->
       {% set feedback_map = feedback_map|default({}) %}
 
       <section class="space-y-5">
@@ -303,6 +327,10 @@
         {% for item in records %}
         {% set feedback = feedback_map.get(item.id) %}
 
+        <!-- 
+          Archive Record Card:
+          data-status is used by archive.js for filtering
+        -->
         <article
           id="record-{{ item.id }}"
           class="archive-record-card bg-white/75 border border-gray-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all scroll-mt-6"
@@ -317,6 +345,10 @@
                   {{ item.original_filename }}
                 </h3>
 
+
+                <!-- 
+                  Record Status Badge: SAFE, CHECK, VIOLATION
+                -->
                 {% if item.get("needs_check") or item.get("checks", 0) > 0 %}
                   <span class="bg-orange-100 text-orange-800 text-[10px] font-bold px-3 py-1 rounded-full shrink-0 inline-flex items-center gap-1">
                     <i class="fa-solid fa-triangle-exclamation"></i>
@@ -377,6 +409,7 @@
                 </p>
               </div>
 
+              <!-- View Details Button: archive-toggle-btn used by archive.js -->
               <button
                 type="button"
                 class="archive-toggle-btn bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 px-4 py-2 rounded-lg text-xs font-bold transition-all"
@@ -386,14 +419,16 @@
             </div>
           </div>
 
-          <!-- Details Area -->
+          <!-- View Details Area 
+            archive.js uses this button to expand or collapse the details panel
+          -->
           <div class="archive-details hidden mt-5 pt-5 border-t border-gray-200/70">
             <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start">
 
               <!-- Left: Input and Output Preview -->
               <div class="space-y-5">
 
-                <!-- Original Input -->
+                <!-- Original Input left top -->
                 <div>
                   <p class="text-xs font-bold text-blue-900 mb-2">
                     Original Input
@@ -428,7 +463,7 @@
                   </div>
                 </div>
 
-                <!-- Detection Output -->
+                <!-- Detection Output left bottom -->
                 <div>
                   <p class="text-xs font-bold text-red-800 mb-2">
                     Detection Output
@@ -468,7 +503,7 @@
               <!-- Metrics and Feedback -->
               <div class="bg-dashboard-card/60 border border-gray-200 rounded-2xl p-4 flex flex-col justify-between">
 
-                <!-- Detection Metrics -->
+                <!-- Detection Metrics Panel right top-->
                 <div>
                   <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
                     Detection Metrics
@@ -505,7 +540,10 @@
                       {{ item.violations }}
                     </span>
                   </div>
-
+                  
+                  <!-- 
+                    Triple Riding Metric if any 
+                  -->
                   {% if item.get("triple_riding", 0) > 0 %}
                   <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3 text-center mt-3">
                     <span class="block text-[8px] font-bold uppercase">
@@ -530,7 +568,7 @@
                   </span>
                 </div>
 
-                <!-- Human Feedback and Correction Panel -->
+                <!-- Human Feedback and Correction Panel right bottomest -->
                 <div
                   class="feedback-panel pt-3 mt-3 border-t border-gray-300/40"
                   data-archive-id="{{ item.id }}"
@@ -540,6 +578,7 @@
                     User Feedback
                   </p>
 
+                  <!-- Feedback Buttons = feedback-btn -->
                   <div class="grid grid-cols-1 gap-2">
                     <button
                       type="button"
@@ -569,7 +608,10 @@
                     </button>
                   </div>
 
-                  <!-- Correction Panel -->
+                  <!-- Correction Panel 
+                    Appears when feedback is "Needs Review" or "Wrong Detection"
+                    Manual correction 
+                  -->
                   <div class="correction-panel {% if feedback and feedback.feedback in ['needs_review', 'wrong_detection'] %}{% else %}hidden{% endif %} bg-white/70 border border-gray-200 rounded-xl p-3 mt-3">
                     <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">
                       Correction Values
@@ -655,7 +697,10 @@
 
   </main>
 
-  <!-- Image Preview Modal -->
+  <!-- Image Preview Modal 
+    Opens selected input/output image in a larger view.
+    Controlled by openImageModal() and closeImageModal() in archive.js
+  -->
   <div id="imageModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50 p-8">
     <div class="relative max-w-5xl w-full bg-[#f4f1e6] rounded-3xl p-5 shadow-2xl">
       <button
@@ -694,6 +739,11 @@
     </div>
   </div>
 
+  <!-- 
+    Archive page JavaScript:
+    Handles filtering, detail toggling, image/video modals,
+    clear archive action, and feedback saving.
+  -->
   <script src="{{ url_for('static', filename='js/archive.js') }}"></script>
 
 </body>

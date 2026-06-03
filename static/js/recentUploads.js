@@ -1,26 +1,19 @@
 /*
-This file manages the Recent Uploads section.
-
-Responsibilities:
-- Load archive records from Flask backend.
+=====================================================
+Recent Uploads in Dashboard - GET /api/recent-uploads
+Load archive records from Flask backend.
 - Create recent upload cards.
 - Display selected archive record on dashboard.
-
-Backend endpoint used:
-GET /api/recent-uploads
+=====================================================
 */
 
-/*
-Stores the currently selected Recent Upload card.
-It is used to remove the selected style from the previous card
-when the user selects another upload.
-*/
+
 let selectedRecentUploadCard = null;
 
 /*
-Loads recent upload records from backend archive.
-
-Backend reads archive_data.json and returns the latest records.
+=====================================================
+Load Recent Uploads - backend archive - archive_data.json
+=====================================================
 */
 async function loadRecentUploadsFromArchive() {
   const {
@@ -57,7 +50,9 @@ async function loadRecentUploadsFromArchive() {
 
 
 /*
-Creates a visual card for one archived upload.
+=====================================================
+Create Recent Upload Card 
+=====================================================
 */
 function createRecentUploadCard(upload) {
   const card = document.createElement("div");
@@ -71,8 +66,7 @@ function createRecentUploadCard(upload) {
   let previewHtml = "";
 
   /*
-  Image record:
-  Use processed output image as card thumbnail.
+  Image record
   */
   if (isImage) {
     previewHtml = `
@@ -83,8 +77,7 @@ function createRecentUploadCard(upload) {
   }
 
   /*
-  Video record:
-  Show video icon instead of loading video as thumbnail.
+  Video record
   */
   else if (isVideo) {
     previewHtml = `
@@ -95,7 +88,7 @@ function createRecentUploadCard(upload) {
   }
 
   /*
-  Fallback for unexpected file types.
+  Fallback for unexpected file types
   */
   else {
     previewHtml = `
@@ -132,28 +125,17 @@ function createRecentUploadCard(upload) {
   on the dashboard.
   */
   card.addEventListener("click", () => {
-  /*
-  First, remove selected style from the previously selected card.
-  This ensures that only one Recent Upload card appears selected.
-  */
-  clearSelectedRecentUploadCard();
-
-  /*
-  Then, apply selected style to the clicked card.
-  The border color changes according to the violation result.
-  */
-  markRecentUploadCardAsSelected(card, upload);
-
-  /*
-  Finally, show this archive record on the dashboard.
-  */
-  showArchiveRecordOnDashboard(upload);
-});
+    clearSelectedRecentUploadCard();
+    markRecentUploadCardAsSelected(card, upload);
+    showArchiveRecordOnDashboard(upload);
+  });
   return card;
 }
 
 /*
-Removes selected style from the previously selected Recent Upload card.
+=====================================================
+Clear Selected Recent Upload Style
+=====================================================
 */
 function clearSelectedRecentUploadCard() {
   if (!selectedRecentUploadCard) return;
@@ -178,15 +160,10 @@ function clearSelectedRecentUploadCard() {
   selectedRecentUploadCard = null;
 }
 
-
 /*
-Applies selected style to the clicked Recent Upload card.
-
-If violation count is greater than 0:
-- red border is used.
-
-If there is no violation:
-- green border is used.
+=====================================================
+Mark Selecetion of Recent Upload red/green border
+=====================================================
 */
 function markRecentUploadCardAsSelected(card, upload) {
   if (!card || !upload) return;
@@ -218,14 +195,9 @@ function markRecentUploadCardAsSelected(card, upload) {
 }
 
 /*
-Displays selected archive record on dashboard.
-
-This function updates:
-- Original Input
-- Detection Output
-- Detection Summary
-- Pipeline Metrics
-- Status labels
+=====================================================
+Show Recent Upload Card - update I/O, Detection Summary, Status Label
+=====================================================
 */
 function showArchiveRecordOnDashboard(upload) {
   if (!upload) return;
@@ -322,6 +294,7 @@ function showArchiveRecordOnDashboard(upload) {
   if (processingTime) processingTime.innerText = formatProcessingTime(upload.processing_time ?? 0);
   if (resolutionText) resolutionText.innerText = upload.resolution ?? "-";
   if (fileTypeText) fileTypeText.innerText = upload.type.toUpperCase();
+  
   /*
   Update input status.
   */

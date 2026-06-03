@@ -10,9 +10,7 @@ from itertools import combinations # For triple riding layout analysis
 # LOAD MODELS
 # =========================================================
 MOTOR_MODEL = YOLO("yolo11m.pt")
-HELMET_MODEL = YOLO(
-    r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt"
-)
+HELMET_MODEL = YOLO(r"C:\Users\Lenovo\Desktop\traffic_base_project\runs\helmet_detection2\v1\weights\best.pt")
 
 # =========================================================
 # Triple Riding Check

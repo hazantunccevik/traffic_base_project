@@ -1,11 +1,6 @@
 /*
 =====================================================
 detection.js
-=====================================================
-
-This file handles the detection process.
-
-Responsibilities:
 - Validate selected file.
 - Decide image or video endpoint.
 - Send file to Flask backend.
@@ -16,15 +11,14 @@ Responsibilities:
 Backend endpoints:
 - POST /api/detect
 - POST /api/detect-video
-*/
-
+=====================================================
 
 /*
+=====================================================
+Detection Handler 
 Sets up Run Detection button event listener.
-
-getSelectedMediaFile:
-A function that returns the currently selected file.
-This is used because selectedMediaFile is stored in main.js.
+getSelectedMediaFile: is stored in main.js.
+=====================================================
 */
 function setupDetectionHandler(getSelectedMediaFile) {
   const {
@@ -36,9 +30,6 @@ function setupDetectionHandler(getSelectedMediaFile) {
   runDetectionBtn.addEventListener("click", async () => {
     const selectedMediaFile = getSelectedMediaFile();
 
-    /*
-    Stop if user did not select a file.
-    */
     if (!selectedMediaFile) {
       showStatusModal(
         "error",
@@ -81,9 +72,8 @@ function setupDetectionHandler(getSelectedMediaFile) {
     setProcessingState();
 
     try {
-      /*
-      Choose correct API endpoint.
-      */
+
+      // Decide endpoint based on file type.
       const endpoint = isVideo ? "/api/detect-video" : "/api/detect";
 
       const response = await fetch(endpoint, {
@@ -93,23 +83,14 @@ function setupDetectionHandler(getSelectedMediaFile) {
 
       const data = await response.json();
 
-      /*
-      Handle HTTP-level errors.
-      */
       if (!response.ok) {
         throw new Error(data.error || "Server error.");
       }
 
-      /*
-      Handle backend-level errors.
-      */
       if (!data.success) {
         throw new Error(data.error || "Detection failed.");
       }
 
-      /*
-      Process result according to file type.
-      */
       if (isImage) {
         handleImageDetectionResult(data);
         showTripleRidingWarning(data);
@@ -122,7 +103,7 @@ function setupDetectionHandler(getSelectedMediaFile) {
 
       /*
       Backend saves the result to archive_data.json.
-      After successful detection, reload Recent Uploads.
+      Reload Recent Uploads.
       */
       loadRecentUploadsFromArchive();
 
@@ -136,17 +117,17 @@ function setupDetectionHandler(getSelectedMediaFile) {
       );
 
     } finally {
-      /*
-      Button must be reset after both success and error.
-      */
       resetRunButton();
     }
   });
 }
 
 
+
 /*
-Handles image detection result.
+=====================================================
+Image Detection Result Handler
+=====================================================
 */
 function handleImageDetectionResult(data) {
   const {
@@ -164,9 +145,6 @@ function handleImageDetectionResult(data) {
 
   const summary = data.summary || {};
 
-  /*
-  Update summary values.
-  */
   if (motorcycleCount) motorcycleCount.innerText = summary.motorcycles ?? 0;
   if (helmetCount) helmetCount.innerText = summary.helmets ?? 0;
   if (violationCount) violationCount.innerText = summary.violations ?? 0;
@@ -174,18 +152,12 @@ function handleImageDetectionResult(data) {
   if (processingTime) processingTime.innerText = formatProcessingTime(summary.processing_time ?? 0);
   if (resolutionText) resolutionText.innerText = summary.resolution ?? "-";
   if (fileTypeText) fileTypeText.innerText = "IMAGE";
-  /*
-  Hide video output because current result is image.
-  */
+
   if (detectionOutputVideo) {
     detectionOutputVideo.classList.add("hidden");
     detectionOutputVideo.removeAttribute("src");
   }
 
-  /*
-  Show processed output image.
-  Timestamp prevents browser cache issue.
-  */
   if (detectionOutputImage) {
     detectionOutputImage.src = data.output_url + "?t=" + new Date().getTime();
     detectionOutputImage.classList.remove("hidden");
@@ -211,9 +183,10 @@ function handleImageDetectionResult(data) {
   );
 }
 
-
 /*
-Handles video detection result.
+=====================================================
+Video Detection Result Handler
+=====================================================
 */
 function handleVideoDetectionResult(data) {
   const {
@@ -231,18 +204,12 @@ function handleVideoDetectionResult(data) {
 
   const summary = data.summary || {};
 
-  /*
-  Hide image output because current result is video.
-  */
+  
   if (detectionOutputImage) {
     detectionOutputImage.classList.add("hidden");
     detectionOutputImage.removeAttribute("src");
   }
 
-  /*
-  Show processed output video.
-  Timestamp prevents browser cache issue.
-  */
   if (detectionOutputVideo) {
     detectionOutputVideo.pause();
 
@@ -258,9 +225,7 @@ function handleVideoDetectionResult(data) {
     outputPlaceholder.classList.add("hidden");
   }
 
-  /*
-  Update summary values.
-  */
+
   if (motorcycleCount) motorcycleCount.innerText = summary.motorcycles ?? 0;
   if (helmetCount) helmetCount.innerText = summary.helmets ?? 0;
   if (violationCount) violationCount.innerText = summary.violations ?? 0;

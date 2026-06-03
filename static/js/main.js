@@ -1,17 +1,14 @@
 /*
 =====================================================
-main.js
-=====================================================
+main.js -main initializer file
 
-This is the main initializer file.
-
-Responsibilities:
 - Wait until dashboard HTML is loaded.
 - Check whether current page is dashboard.
 - Store selected media file.
 - Connect button events.
 - Initialize detection handler.
 - Load Recent Uploads on page open.
+=====================================================
 */
 
 
@@ -32,25 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /*
   =====================================================
-  Dashboard Page Guard
+  Dashboard Page Guard -does not exist, this script stops, prevent error on non-dashboard pages 
   =====================================================
-
-  If uploadImageBtn does not exist, this script stops.
-  This prevents errors on non-dashboard pages.
   */
-
   if (!uploadImageBtn) return;
 
 
   /*
   =====================================================
-  Global State for Selected File
+  Global State for Selected File - current image/video selected
   =====================================================
-
-  selectedMediaFile stores the current image/video selected
-  by the user.
   */
-
   let selectedMediaFile = null;
 
 
@@ -85,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /*
   =====================================================
-  Choose File Button Event
+  Choose File Button Event - Inside POP UP 
   =====================================================
 
   This button opens the hidden file input.
@@ -102,12 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   =====================================================
   File Selection Event
   =====================================================
-
-  When user selects a file:
-  - selectedMediaFile is updated.
-  - selected file name is shown in modal.
   */
-
   if (mediaInput && selectedFileName) {
     mediaInput.addEventListener("change", () => {
       selectedMediaFile = mediaInput.files[0];
@@ -126,13 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   =====================================================
   Confirm Upload Event
   =====================================================
-
-  When user clicks "Use This File":
-  - selected file is shown in Original Input area.
-  - file resolution is updated.
-  - upload modal is closed.
   */
-
   if (confirmUploadBtn) {
     confirmUploadBtn.addEventListener("click", () => {
       if (!selectedMediaFile) {
@@ -154,24 +132,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /*
   =====================================================
-  Detection Handler Initialization
+  Detection Handler Initialization - detection.js getter 
   =====================================================
-
-  setupDetectionHandler needs access to selectedMediaFile.
-  Instead of using a global variable, we pass a getter function.
   */
-
   setupDetectionHandler(() => selectedMediaFile);
 
 
   /*
   =====================================================
-  Initial Recent Uploads Load
+  Initial Recent Uploads Load - archive records are loaded immediately
   =====================================================
-
-  When dashboard opens, archive records are loaded immediately.
   */
-
   setupRecentUploadsToggle();
   checkSystemStatus();
   loadRecentUploadsFromArchive();

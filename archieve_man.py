@@ -5,13 +5,15 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARCHIVE_FILE = os.path.join(BASE_DIR, "archive_data.json")
 
+# Load archive records from JSON file
 def load_archive():
     if not os.path.exists(ARCHIVE_FILE):
         return []
 
     try:
+        # Load the archive data from the JSON file - reading without trouble with turkish char.
         with open(ARCHIVE_FILE, "r", encoding="utf-8") as file:
-            return json.load(file)
+            return json.load(file) # JSON -> Python dictİonary
 
     except json.JSONDecodeError:
         return []
@@ -19,7 +21,7 @@ def load_archive():
     except Exception:
         return []
 
-
+# Save to archive records into JSON file 
 def save_archive(records):
     with open(ARCHIVE_FILE, "w", encoding="utf-8") as file:
         json.dump(records, file, indent=4, ensure_ascii=False)
@@ -35,6 +37,7 @@ def clear_archive():
     save_archive([])
 
 
+# After detection 
 def create_archive_record(
     file_id,
     original_filename,
@@ -56,6 +59,7 @@ def create_archive_record(
         "triple_riding": summary.get("triple_riding", 0),
         "triple_riding_detected": summary.get("triple_riding_detected", False),
 
+        # Check Labelling Logic: If triple riding is detected
         "checks": summary.get("checks", summary.get("triple_riding", 0)),
         "needs_check": summary.get("triple_riding_detected", False),
         "check_reason": (
@@ -73,11 +77,8 @@ def create_archive_record(
     }
 
 
+# Calculate performance metrics for Performance Metrics page
 def calculate_performance_metrics(records):
-    """
-    Calculates general performance analytics from archive records.
-    Used by the /performance page.
-    """
 
     total_records = len(records)
     total_motorcycles = sum(item.get("motorcycles", 0) for item in records)
@@ -97,6 +98,7 @@ def calculate_performance_metrics(records):
         avg_confidence = 0
         avg_processing_time = 0
 
+    # Prepare data for charts - reverse order for chronological display
     chart_labels = [
         item.get("original_filename", f"Record {index + 1}")
         for index, item in enumerate(records)
@@ -127,6 +129,7 @@ def calculate_performance_metrics(records):
         for item in records
     ][::-1]
 
+    # Return the calculated metrics through app.py to performance.html
     return {
         "total_records": total_records,
         "total_motorcycles": total_motorcycles,

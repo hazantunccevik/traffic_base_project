@@ -1,25 +1,19 @@
 /*
-This file contains helper functions that update the
-dashboard user interface.
-
-Responsibilities:
+=====================================================
+UI Helper Functions upadted 
 - Format confidence and processing time.
 - Open and close modals.
 - Show status messages.
 - Reset dashboard values.
 - Update output status.
 - Show selected image/video preview.
-*/
-
-
-/*
-=====================================================
-Formatting Helper Functions
 =====================================================
 */
 
 /*
-Converts processing time into a readable format.
+=====================================================
+Processing Time - readable
+=====================================================
 */
 function formatProcessingTime(ms) {
   if (!ms || ms === 0 || ms === "-") return "0 ms";
@@ -35,9 +29,10 @@ function formatProcessingTime(ms) {
   return Math.round(numeric) + " ms";
 }
 
-
 /*
-Converts confidence value into percentage format.
+=====================================================
+Confidence Value - percentage
+=====================================================
 */
 function formatConfidence(val) {
   if (val === undefined || val === null || val === "-") return "0%";
@@ -56,12 +51,8 @@ function formatConfidence(val) {
 
 /*
 =====================================================
-Upload Modal Functions
+Upload Modal Function - POP Up Starting 
 =====================================================
-*/
-
-/*
-Opens the upload modal.
 */
 function openUploadModal() {
   const { uploadModal } = window.elements;
@@ -74,7 +65,9 @@ function openUploadModal() {
 
 
 /*
-Closes the upload modal.
+=====================================================
+Close Modal Function
+=====================================================
 */
 function closeUploadModal() {
   const { uploadModal } = window.elements;
@@ -88,17 +81,8 @@ function closeUploadModal() {
 
 /*
 =====================================================
-Status Modal Functions
+Status Modal Function -POP UP 
 =====================================================
-*/
-
-/*
-Shows a status modal.
-
-type:
-- success
-- error
-- info
 */
 function showStatusModal(type, title, message) {
   const {
@@ -144,7 +128,9 @@ function showStatusModal(type, title, message) {
 
 
 /*
-Closes the status modal.
+=====================================================
+Close Status Modal Function
+=====================================================
 */
 function closeStatusModal() {
   const { statusModal } = window.elements;
@@ -158,12 +144,8 @@ function closeStatusModal() {
 
 /*
 =====================================================
-Dashboard Reset and Status Functions
+Dashboard Reset
 =====================================================
-*/
-
-/*
-Resets detection summary and pipeline metrics.
 */
 function resetDetectionValues() {
   const {
@@ -195,7 +177,9 @@ function resetDetectionValues() {
 
 
 /*
-Sets the dashboard into processing state.
+=====================================================
+Dashboard Processing State 
+=====================================================
 */
 function setProcessingState() {
   const { runDetectionBtn, outputStatus } = window.elements;
@@ -217,7 +201,9 @@ function setProcessingState() {
 
 
 /*
-Resets the Run Detection button after success or error.
+=====================================================
+Reset Run Detection Button
+=====================================================
 */
 function resetRunButton() {
   const { runDetectionBtn } = window.elements;
@@ -231,7 +217,9 @@ function resetRunButton() {
 
 
 /*
-Shows Safe output status.
+=====================================================
+Safe Output Status Modal - Pİght Preview Panel
+=====================================================
 */
 function setOutputStatusSafe() {
   const { outputStatus } = window.elements;
@@ -247,7 +235,9 @@ function setOutputStatusSafe() {
 
 
 /*
-Shows Violation Detected output status.
+=====================================================
+Violation Output Status Modal - Right Preview Panel
+=====================================================
 */
 function setOutputStatusViolation() {
   const { outputStatus } = window.elements;
@@ -263,7 +253,9 @@ function setOutputStatusViolation() {
 
 
 /*
-Shows Error output status.
+=====================================================
+Error Output Status Modal - POP UP
+=====================================================
 */
 function setOutputStatusError() {
   const { outputStatus } = window.elements;
@@ -278,10 +270,9 @@ function setOutputStatusError() {
 }
 
 /*
-Resets the Detection Output preview area.
-
-This is used when the user selects a new input file.
-It clears the previous output image/video and shows the default placeholder again.
+=====================================================
+Reset Output Preview
+=====================================================
 */
 function resetOutputPreview() {
   const {
@@ -290,17 +281,11 @@ function resetOutputPreview() {
     detectionOutputVideo
   } = window.elements;
 
-  /*
-  Hide and clear previous output image.
-  */
   if (detectionOutputImage) {
     detectionOutputImage.classList.add("hidden");
     detectionOutputImage.removeAttribute("src");
   }
 
-  /*
-  Hide and clear previous output video.
-  */
   if (detectionOutputVideo) {
     detectionOutputVideo.pause();
     detectionOutputVideo.classList.add("hidden");
@@ -308,9 +293,7 @@ function resetOutputPreview() {
     detectionOutputVideo.innerHTML = "";
   }
 
-  /*
-  Show default output placeholder again.
-  */
+  // Show placeholder again after resetting output preview.
   if (outputPlaceholder) {
     outputPlaceholder.classList.remove("hidden");
   }
@@ -323,7 +306,9 @@ File Preview Functions
 */
 
 /*
-Shows selected image or video in Original Input area.
+=====================================================
+Show Input Preview
+=====================================================
 */
 function setInputPreview(file) {
   const {
@@ -393,9 +378,10 @@ function setInputPreview(file) {
   }
 }
 
-
 /*
-Updates resolution text for selected media.
+=====================================================
+Show Updates Resolution Text - bottom left 
+=====================================================
 */
 function updateResolution(file) {
   const { resolutionText } = window.elements;
@@ -422,10 +408,7 @@ function updateResolution(file) {
 =====================================================
 System Status Badge
 =====================================================
-
-Updates the system status badge in the sidebar.
 */
-
 function setSystemStatus(type, message) {
   const {
     systemStatusBadge,
@@ -468,14 +451,9 @@ function setSystemStatus(type, message) {
 
 /*
 =====================================================
-Recent Uploads Toggle
+Recent Uploads Toggle - Shows or hides
 =====================================================
-
-Shows or hides the Recent Uploads card list.
-This keeps the dashboard cleaner when the user does not
-need to see previous uploads.
 */
-
 function setupRecentUploadsToggle() {
   const {
     toggleRecentUploadsBtn,
@@ -501,11 +479,7 @@ function setupRecentUploadsToggle() {
 =====================================================
 Triple Riding Warning Popup
 =====================================================
-
-Shows a warning popup when triple riding is detected.
-This function uses the existing Status Modal component.
 */
-
 function showTripleRidingWarning(data) {
   if (!data) return;
 
